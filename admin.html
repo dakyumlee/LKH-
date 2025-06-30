@@ -144,19 +144,24 @@
     }
 
     .logout-btn {
-      position: absolute;
-      top: 2rem;
+      position: fixed;
+      bottom: 2rem;
       right: 2rem;
       background-color: #6c757d;
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 0.8rem;
       cursor: pointer;
+      font-size: 0.85rem;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .logout-btn:hover {
       background-color: #5a6268;
+      transform: translateY(-1px);
+      transition: all 0.2s ease;
     }
 
     .stats {
@@ -190,8 +195,7 @@
     <h1>관리자 페이지</h1>
     <button class="logout-btn" onclick="logout()">로그아웃</button>
     
-    <div class="stats" id="stats">
-    </div>
+    <div class="stats" id="stats"></div>
 
     <div class="admin-nav">
       <button onclick="showSection('blog')" class="nav-btn active">블로그</button>
