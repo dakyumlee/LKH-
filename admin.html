@@ -2,78 +2,293 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>Admin | <a href=index.html>기록</a>: 이기현</title>
+  <title>Admin | 기록: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/admin.js"></script>
   <style>
     @font-face {
-    font-family: 'Chosunilbo_myungjo';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+      font-family: 'Chosunilbo_myungjo';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
 
-     body {
+    body {
       margin: 0;
       background-color: #1a1a1a;
       color: #f0f0f0;
       font-family: 'Chosunilbo_myungjo';
     }
     
-    h1 {
+    .admin-header {
       text-align: center;
-      margin-top: 2rem;
-    }
-    .admin-panel {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 2rem;
       padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      justify-items: center;
+      border-bottom: 1px solid #333;
     }
-    .card {
-      width: 100%;
-      max-width: 360px;
+
+    .admin-header h1 {
+      margin-bottom: 1rem;
+    }
+
+    .admin-nav {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-nav button {
+      padding: 0.5rem 1rem;
+      background-color: #444;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .admin-nav button:hover {
+      background-color: #555;
+    }
+
+    .admin-nav button.active {
+      background-color: #666;
+    }
+
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .admin-section {
+      display: none;
+      gap: 2rem;
+    }
+
+    .admin-section.active {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+    }
+
+    .upload-section {
       background-color: #2a2a2a;
-      padding: 1.5rem;
+      padding: 2rem;
       border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      height: fit-content;
+    }
+
+    .manage-section {
+      background-color: #2a2a2a;
+      padding: 2rem;
+      border-radius: 10px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .content-item {
+      background-color: #3a3a3a;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .content-item h4 {
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .content-item p {
+      margin-bottom: 0.5rem;
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+
+    .content-item time {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .content-item img {
+      max-width: 200px;
+      max-height: 150px;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .content-item iframe {
+      width: 200px;
+      height: 113px;
+      border-radius: 5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background-color 0.3s;
+    }
+
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      background-color: #5a6268;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background-color: #2a2a2a;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .stat-label {
+      color: #ccc;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
+  <div class="admin-header">
     <h1>관리자 페이지</h1>
-  <main class="admin-panel">
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+    
+    <div class="stats" id="stats">
+    </div>
 
-    <section class="card">
-      <h2>글 업로드</h2>
-      <form id="blogForm">
-        <input type="text" id="title" placeholder="제목" required>
-        <textarea id="content" placeholder="내용" required></textarea>
-        <button type="submit">업로드</button>
-      </form>
-    </section>
+    <div class="admin-nav">
+      <button onclick="showSection('blog')" class="nav-btn active">블로그</button>
+      <button onclick="showSection('gallery')" class="nav-btn">갤러리</button>
+      <button onclick="showSection('youtube')" class="nav-btn">YouTube</button>
+      <button onclick="showSection('diary')" class="nav-btn">일기</button>
+      <button onclick="showSection('anonymous')" class="nav-btn">익명메시지</button>
+      <button onclick="showSection('memorylog')" class="nav-btn">타임라인</button>
+    </div>
+  </div>
 
-    <section class="card">
-      <h2>갤러리 사진 업로드</h2>
-      <form id="galleryForm">
-        <input type="file" id="imageFile" accept="image/*" required>
-        <input type="text" id="caption" placeholder="설명" required>
-        <button type="submit">사진 업로드</button>
-      </form>
-    </section>
+  <div class="admin-container">
+    <div id="blog-section" class="admin-section active">
+      <div class="upload-section">
+        <h2>블로그 글 작성</h2>
+        <form id="blogForm">
+          <input type="text" id="blogTitle" placeholder="제목" required>
+          <textarea id="blogContent" placeholder="내용" required rows="10"></textarea>
+          <button type="submit">글 업로드</button>
+        </form>
+      </div>
+      <div class="manage-section">
+        <h2>블로그 관리</h2>
+        <div id="blogList">블로그 글을 불러오는 중...</div>
+      </div>
+    </div>
 
-    <section class="card">
-      <h2>YouTube 영상 추가</h2>
-      <form id="youtubeForm">
-        <input type="text" id="videoUrl" placeholder="유튜브 영상 링크" required>
-        <input type="text" id="videoDesc" placeholder="설명" required>
-        <button type="submit">영상 업로드</button>
-      </form>
-    </section>
-  </main>
+    <div id="gallery-section" class="admin-section">
+      <div class="upload-section">
+        <h2>갤러리 사진 업로드</h2>
+        <form id="galleryForm">
+          <input type="file" id="imageFile" accept="image/*" required>
+          <input type="text" id="caption" placeholder="설명" required>
+          <button type="submit">사진 업로드</button>
+        </form>
+      </div>
+      <div class="manage-section">
+        <h2>갤러리 관리</h2>
+        <div id="galleryManageList">갤러리를 불러오는 중...</div>
+      </div>
+    </div>
+
+    <div id="youtube-section" class="admin-section">
+      <div class="upload-section">
+        <h2>YouTube 영상 추가</h2>
+        <form id="youtubeForm">
+          <input type="text" id="videoUrl" placeholder="유튜브 영상 링크" required>
+          <input type="text" id="videoDesc" placeholder="설명" required>
+          <button type="submit">영상 업로드</button>
+        </form>
+      </div>
+      <div class="manage-section">
+        <h2>YouTube 관리</h2>
+        <div id="youtubeManageList">YouTube 영상을 불러오는 중...</div>
+      </div>
+    </div>
+
+    <div id="diary-section" class="admin-section">
+      <div class="upload-section">
+        <h2>일기 작성</h2>
+        <form id="diaryForm">
+          <input type="text" id="diaryTitle" placeholder="제목" required>
+          <textarea id="diaryContent" placeholder="오늘의 기현은..." required rows="10"></textarea>
+          <button type="submit">일기 작성</button>
+        </form>
+      </div>
+      <div class="manage-section">
+        <h2>일기 관리</h2>
+        <div id="diaryManageList">일기를 불러오는 중...</div>
+      </div>
+    </div>
+
+    <div id="anonymous-section" class="admin-section">
+      <div class="upload-section">
+        <h2>익명 메시지</h2>
+        <p>익명 메시지는 사용자들이 직접 작성합니다.<br>여기서는 관리만 가능합니다.</p>
+      </div>
+      <div class="manage-section">
+        <h2>익명메시지 관리</h2>
+        <div id="anonymousManageList">익명메시지를 불러오는 중...</div>
+      </div>
+    </div>
+
+    <div id="memorylog-section" class="admin-section">
+      <div class="upload-section">
+        <h2>타임라인 추가</h2>
+        <form id="memorylogForm">
+          <input type="text" id="memorylogTitle" placeholder="제목" required>
+          <textarea id="memorylogDesc" placeholder="설명" required rows="5"></textarea>
+          <button type="submit">타임라인 추가</button>
+        </form>
+      </div>
+      <div class="manage-section">
+        <h2>타임라인 관리</h2>
+        <div id="memorylogManageList">타임라인을 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
