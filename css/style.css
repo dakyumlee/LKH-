@@ -1,4 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Pretendard&display=swap');
+@font-face {
+    font-family: 'Chosunilbo_myungjo';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
 
 * {
   margin: 0;
@@ -12,7 +18,7 @@ a {
 }
 
 body {
-  font-family: 'Pretendard', sans-serif;
+  font-family: 'Chosunilbo_myungjo';
   background-color: #1a1a1a;
   color: #f0f0f0;
   line-height: 1.6;
@@ -46,6 +52,7 @@ input, textarea, button {
 }
 
 button {
+  font-family: 'Chosunilbo_myungjo';
   background-color: #444;
   cursor: pointer;
 }
