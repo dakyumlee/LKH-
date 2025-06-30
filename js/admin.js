@@ -8,18 +8,18 @@ import {
   doc, 
   orderBy, 
   query 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { 
   ref, 
   uploadBytes, 
   getDownloadURL,
   deleteObject 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-storage.js";
 import { 
   onAuthStateChanged,
   signOut 
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+ 
 onAuthStateChanged(auth, (user) => {
   if (!user || user.email !== 'admin@kiheon.com') {
     alert('관리자 권한이 필요합니다.');
@@ -30,6 +30,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+ 
 window.logout = async () => {
   if (confirm('로그아웃 하시겠습니까?')) {
     try {
@@ -41,27 +42,31 @@ window.logout = async () => {
   }
 };
 
+ 
 window.showSection = (sectionName) => {
+ 
   document.querySelectorAll('.admin-section').forEach(section => {
     section.classList.remove('active');
   });
-
+   
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.remove('active');
   });
-
+  
   document.getElementById(`${sectionName}-section`).classList.add('active');
-
+  
+  
   event.target.classList.add('active');
-
+  
+ 
   loadSectionData(sectionName);
 };
-
+ 
 async function loadAllData() {
   await loadStats();
-  await loadSectionData('blog');
+  await loadSectionData('blog');  
 }
-
+ 
 async function loadStats() {
   const stats = {
     blogs: 0,
@@ -110,7 +115,7 @@ async function loadStats() {
     console.error('통계 로드 실패:', error);
   }
 }
-
+ 
 async function loadSectionData(sectionName) {
   switch(sectionName) {
     case 'blog':

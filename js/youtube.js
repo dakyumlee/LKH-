@@ -1,5 +1,5 @@
 import { db } from '../firebase/firebase.js';
-import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
 const youtubeList = document.getElementById('youtubeList');
 
