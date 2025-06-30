@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 익명 방명록: 아무나 읽을 수 있음. 쓸 수 있는 건 관리자만
+    match /anonymous/{docId} {
+      allow read: if true;
+      allow write, delete: if request.auth != null && request.auth.token.email == "admin@kiheon.com";
+    }
+
+    // 기현의 일기: 관리자만 읽기/쓰기/삭제 가능
+    match /diary/{docId} {
+      allow read, write, delete: if request.auth != null && request.auth.token.email == "admin@kiheon.com";
+    }
+  }
+}

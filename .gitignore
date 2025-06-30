@@ -1,0 +1,11 @@
+# Firebase 비밀 파일 제외
+firebase/firebase.js
+
+# Node 관련 (혹시 쓴다면)
+node_modules/
+dist/
+.env
+
+# Mac/Windows 쓰레기 파일 제외
+.DS_Store
+Thumbs.db

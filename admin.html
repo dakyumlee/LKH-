@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin | 기록: 이기현</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="firebase/firebase.js"></script>
+  <script type="module" src="js/admin.js"></script>
+  <style>
+     body {
+      margin: 0;
+      background-color: #1a1a1a;
+      color: #f0f0f0;
+      font-family: Pretendard, sans-serif;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .admin-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      justify-items: center;
+    }
+    .card {
+      width: 100%;
+      max-width: 360px;
+      background-color: #2a2a2a;
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+    <h1>관리자 페이지</h1>
+  <main class="admin-panel">
+
+    <section class="card">
+      <h2>글 업로드</h2>
+      <form id="blogForm">
+        <input type="text" id="title" placeholder="제목" required>
+        <textarea id="content" placeholder="내용" required></textarea>
+        <button type="submit">업로드</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>갤러리 사진 업로드</h2>
+      <form id="galleryForm">
+        <input type="file" id="imageFile" accept="image/*" required>
+        <input type="text" id="caption" placeholder="설명" required>
+        <button type="submit">사진 업로드</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>YouTube 영상 추가</h2>
+      <form id="youtubeForm">
+        <input type="text" id="videoUrl" placeholder="유튜브 영상 링크" required>
+        <input type="text" id="videoDesc" placeholder="설명" required>
+        <button type="submit">영상 업로드</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

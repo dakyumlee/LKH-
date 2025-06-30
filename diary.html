@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>기현의 일기 | 기록: 이기현</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="firebase/firebase.js"></script>
+  <script type="module" src="js/diary.js"></script>
+</head>
+<body>
+<header>
+    <h1>Diary</h1>
+    <nav>
+      <ul>
+        <li><a href="about.html">About</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="memorylog.html">Memorylog</a></li>
+        <li><a href="youtube.html">YouTube</a></li>
+        <li><a href="diary.html">Diary</a></li>
+        <li><a href="anonymous.html">Anonymous</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="diary-wrap">
+    <h1>기현의 일기</h1>
+    <p class="subtitle">혼자만의 기록, 그러나 열려 있는 페이지</p>
+    <br>
+
+    <form id="diaryForm">
+      <input type="text" id="diaryTitle" placeholder="제목" required>
+      <textarea id="diaryText" placeholder="오늘의 기현은..." required></textarea>
+      <button type="submit">기록 남기기</button>
+    </form>
+
+    <section id="diaryList" class="diary-list"></section>
+  </main>
+</body>
+</html>
