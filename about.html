@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <title>About | 기록: 이기현</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
+    @font-face {
+    font-family: 'Chosunilbo_myungjo';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
 
     * {
       margin: 0;
@@ -13,7 +18,7 @@
     }
 
     body {
-      font-family: 'Pretendard', sans-serif;
+      font-family: 'Chosunilbo_myungjo';
       background-color: #1a1a1a;
       color: #f0f0f0;
       line-height: 1.6;
@@ -144,6 +149,11 @@
       line-height: 1.7;
     }
 
+    a {
+        text-decoration: none;
+        color:azure;
+    }
+
     @media (max-width: 768px) {
       .about-content {
         grid-template-columns: 1fr;
@@ -159,7 +169,7 @@
 </head>
 <body>
   <header>
-    <h1>About</h1>
+    <h1><a href=index.html>기록</a>, About</h1>
     <nav>
       <ul>
         <li><a href="about.html">About</a></li>
