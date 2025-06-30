@@ -6,6 +6,218 @@
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/blog.js"></script>
+  <style>
+    @font-face {
+    font-family: 'Chosunilbo_myungjo';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+    color: #f0f0f0;
+}
+
+body {
+  font-family: 'Chosunilbo_myungjo';
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #ffffff;
+}
+
+p, time {
+  color: #cccccc;
+  font-size: 0.95rem;
+}
+
+input, textarea, button {
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 5px;
+  background-color: #333;
+  color: #fff;
+}
+
+button {
+  font-family: 'Chosunilbo_myungjo';
+  background-color: #444;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+.preview, .gallery-grid, .youtube-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: 2rem;
+}
+
+.card, .gallery-item, .video {
+  background-color: #2a2a2a;
+  padding: 1.5rem;
+  border-radius: 10px;
+  transition: 0.3s ease;
+}
+
+.card:hover, .gallery-item:hover, .video:hover {
+  background-color: #3a3a3a;
+}
+
+.gallery-item img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.video iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+}
+
+header {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+}
+
+header nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+nav a {
+  color: #bbb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+nav a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+footer {
+  text-align: center;
+  margin-top: 4rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.login-wrap {
+  max-width: 400px;
+  margin: 5rem auto;
+  text-align: center;
+}
+
+.admin-panel {
+  display: grid;
+  gap: 2rem;
+  padding: 2rem 1rem;
+  max-width: 900px;
+  margin: auto;
+}
+
+/* 향상된 블로그 스타일 */
+#blogList {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blog-post {
+  background: linear-gradient(135deg, #242424 0%, #1e1e1e 100%);
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.blog-post::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, #555, #333);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.blog-post:hover::before {
+  opacity: 1;
+}
+
+.blog-post:hover {
+  border-color: #444;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.blog-post h3 {
+  font-size: 1.4rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.blog-post p {
+  color: #cccccc;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.blog-post time {
+  color: #777;
+  font-size: 0.85rem;
+  font-weight: 400;
+  display: block;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+  </style>
 </head>
 <body>
   <header>
