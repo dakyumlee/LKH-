@@ -14,7 +14,7 @@ loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   console.log('로그인 폼 제출됨');
   
-  const email = "admin@kiheon.com";
+  const email = "71karamm@gmail.com";
   const password = document.getElementById('password').value.trim();
   
   console.log('이메일:', email);

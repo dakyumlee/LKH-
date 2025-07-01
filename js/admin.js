@@ -21,7 +21,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
  
 onAuthStateChanged(auth, (user) => {
-  if (!user || user.email !== 'admin@kiheon.com') {
+  if (!user || user.email !== '71karamm@gmail.com') {
     alert('관리자 권한이 필요합니다.');
     window.location.href = 'login.html';
   } else {

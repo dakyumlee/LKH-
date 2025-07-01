@@ -5,7 +5,7 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/fi
 let isAdmin = false;
 
 onAuthStateChanged(auth, (user) => {
-  if (user && user.email === 'admin@kiheon.com') {
+  if (user && user.email === '71karamm@gmail.com') {
     isAdmin = true;
   }
   loadMessages();
