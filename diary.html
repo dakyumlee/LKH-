@@ -6,8 +6,6 @@
   <link rel="stylesheet" href="css/style.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/diary.js"></script>
-  <script src="js/swipe-back.js"></script>
-  <link rel="stylesheet" href="css/media.css">
   <style>
     .diary-wrap {
       max-width: 800px;
@@ -272,6 +270,42 @@
         opacity: 0;
         transform: translateY(-20px);
       }
+    }
+
+    @media (max-width: 768px) {
+      .diary-wrap {
+        padding: 0 1rem;
+      }
+
+      .diary-header {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .diary-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .diary-entry {
+        padding: 2rem;
+      }
+
+      .diary-entry h3 {
+        font-size: 1.2rem;
+      }
+
+      .diary-list {
+        gap: 2rem;
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+    }
+
+    #diaryForm {
+      display: none;
     }
   </style>
 </head>
