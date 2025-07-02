@@ -7,7 +7,8 @@ import {
   deleteDoc, 
   doc, 
   orderBy, 
-  query 
+  query,
+  updateDoc 
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { 
   ref, 
@@ -161,7 +162,10 @@ async function loadBlogs() {
         <h4>${data.title}</h4>
         <p>${data.content.substring(0, 100)}${data.content.length > 100 ? '...' : ''}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <button class="delete-btn" onclick="deleteBlog('${docSnap.id}')">삭제</button>
+        <div class="admin-buttons">
+          <button class="edit-btn" onclick="editBlog('${docSnap.id}')">수정</button>
+          <button class="delete-btn" onclick="deleteBlog('${docSnap.id}')">삭제</button>
+        </div>
       `;
       container.appendChild(item);
     });
@@ -194,7 +198,10 @@ async function loadGalleryManage() {
         <h4>사진</h4>
         <p>${data.caption}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <button class="delete-btn" onclick="deleteGallery('${docSnap.id}', '${data.imageUrl}')">삭제</button>
+        <div class="admin-buttons">
+          <button class="edit-btn" onclick="editGallery('${docSnap.id}')">수정</button>
+          <button class="delete-btn" onclick="deleteGallery('${docSnap.id}', '${data.imageUrl}')">삭제</button>
+        </div>
       `;
       container.appendChild(item);
     });
@@ -229,7 +236,10 @@ async function loadYouTubeManage() {
         <p>${data.description}</p>
         <p><a href="${data.videoUrl}" target="_blank">${data.videoUrl}</a></p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <button class="delete-btn" onclick="deleteYouTube('${docSnap.id}')">삭제</button>
+        <div class="admin-buttons">
+          <button class="edit-btn" onclick="editYouTube('${docSnap.id}')">수정</button>
+          <button class="delete-btn" onclick="deleteYouTube('${docSnap.id}')">삭제</button>
+        </div>
       `;
       container.appendChild(item);
     });
@@ -261,7 +271,10 @@ async function loadDiaryManage() {
         <h4>${data.title}</h4>
         <p>${data.text.substring(0, 100)}${data.text.length > 100 ? '...' : ''}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <button class="delete-btn" onclick="deleteDiary('${docSnap.id}')">삭제</button>
+        <div class="admin-buttons">
+          <button class="edit-btn" onclick="editDiary('${docSnap.id}')">수정</button>
+          <button class="delete-btn" onclick="deleteDiary('${docSnap.id}')">삭제</button>
+        </div>
       `;
       container.appendChild(item);
     });
@@ -293,7 +306,10 @@ async function loadAnonymousManage() {
         <h4>익명메시지</h4>
         <p>${data.text}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <button class="delete-btn" onclick="deleteAnonymous('${docSnap.id}')">삭제</button>
+        <div class="admin-buttons">
+          <button class="edit-btn" onclick="editAnonymous('${docSnap.id}')">수정</button>
+          <button class="delete-btn" onclick="deleteAnonymous('${docSnap.id}')">삭제</button>
+        </div>
       `;
       container.appendChild(item);
     });
@@ -325,7 +341,10 @@ async function loadMemorylogManage() {
         <h4>${data.title}</h4>
         <p>${data.description}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <button class="delete-btn" onclick="deleteMemorylog('${docSnap.id}')">삭제</button>
+        <div class="admin-buttons">
+          <button class="edit-btn" onclick="editMemorylog('${docSnap.id}')">수정</button>
+          <button class="delete-btn" onclick="deleteMemorylog('${docSnap.id}')">삭제</button>
+        </div>
       `;
       container.appendChild(item);
     });
@@ -334,6 +353,202 @@ async function loadMemorylogManage() {
     container.innerHTML = '<p>타임라인을 불러오는데 실패했습니다.</p>';
   }
 }
+
+window.editBlog = async (id) => {
+  try {
+    const q = query(collection(db, 'blogs'));
+    const snapshot = await getDocs(q);
+    let blogData = null;
+    
+    snapshot.forEach(doc => {
+      if (doc.id === id) {
+        blogData = doc.data();
+      }
+    });
+    
+    if (!blogData) return;
+    
+    const newTitle = prompt('제목을 수정하세요:', blogData.title);
+    if (newTitle === null) return;
+    
+    const newContent = prompt('내용을 수정하세요:', blogData.content);
+    if (newContent === null) return;
+    
+    await updateDoc(doc(db, 'blogs', id), {
+      title: newTitle,
+      content: newContent
+    });
+    
+    alert('블로그 글이 수정되었습니다.');
+    loadBlogs();
+    loadStats();
+  } catch (error) {
+    console.error('블로그 수정 실패:', error);
+    alert('수정에 실패했습니다.');
+  }
+};
+
+window.editGallery = async (id) => {
+  try {
+    const q = query(collection(db, 'gallery'));
+    const snapshot = await getDocs(q);
+    let galleryData = null;
+    
+    snapshot.forEach(doc => {
+      if (doc.id === id) {
+        galleryData = doc.data();
+      }
+    });
+    
+    if (!galleryData) return;
+    
+    const newCaption = prompt('설명을 수정하세요:', galleryData.caption);
+    if (newCaption === null) return;
+    
+    await updateDoc(doc(db, 'gallery', id), {
+      caption: newCaption
+    });
+    
+    alert('갤러리 설명이 수정되었습니다.');
+    loadGalleryManage();
+    loadStats();
+  } catch (error) {
+    console.error('갤러리 수정 실패:', error);
+    alert('수정에 실패했습니다.');
+  }
+};
+
+window.editYouTube = async (id) => {
+  try {
+    const q = query(collection(db, 'youtube'));
+    const snapshot = await getDocs(q);
+    let youtubeData = null;
+    
+    snapshot.forEach(doc => {
+      if (doc.id === id) {
+        youtubeData = doc.data();
+      }
+    });
+    
+    if (!youtubeData) return;
+    
+    const newUrl = prompt('YouTube URL을 수정하세요:', youtubeData.videoUrl);
+    if (newUrl === null) return;
+    
+    const newDescription = prompt('설명을 수정하세요:', youtubeData.description);
+    if (newDescription === null) return;
+    
+    await updateDoc(doc(db, 'youtube', id), {
+      videoUrl: newUrl,
+      description: newDescription
+    });
+    
+    alert('YouTube 영상이 수정되었습니다.');
+    loadYouTubeManage();
+    loadStats();
+  } catch (error) {
+    console.error('YouTube 수정 실패:', error);
+    alert('수정에 실패했습니다.');
+  }
+};
+
+window.editDiary = async (id) => {
+  try {
+    const q = query(collection(db, 'diary'));
+    const snapshot = await getDocs(q);
+    let diaryData = null;
+    
+    snapshot.forEach(doc => {
+      if (doc.id === id) {
+        diaryData = doc.data();
+      }
+    });
+    
+    if (!diaryData) return;
+    
+    const newTitle = prompt('제목을 수정하세요:', diaryData.title);
+    if (newTitle === null) return;
+    
+    const newText = prompt('내용을 수정하세요:', diaryData.text);
+    if (newText === null) return;
+    
+    await updateDoc(doc(db, 'diary', id), {
+      title: newTitle,
+      text: newText
+    });
+    
+    alert('일기가 수정되었습니다.');
+    loadDiaryManage();
+    loadStats();
+  } catch (error) {
+    console.error('일기 수정 실패:', error);
+    alert('수정에 실패했습니다.');
+  }
+};
+
+window.editAnonymous = async (id) => {
+  try {
+    const q = query(collection(db, 'anonymous'));
+    const snapshot = await getDocs(q);
+    let anonymousData = null;
+    
+    snapshot.forEach(doc => {
+      if (doc.id === id) {
+        anonymousData = doc.data();
+      }
+    });
+    
+    if (!anonymousData) return;
+    
+    const newText = prompt('내용을 수정하세요:', anonymousData.text);
+    if (newText === null) return;
+    
+    await updateDoc(doc(db, 'anonymous', id), {
+      text: newText
+    });
+    
+    alert('익명메시지가 수정되었습니다.');
+    loadAnonymousManage();
+    loadStats();
+  } catch (error) {
+    console.error('익명메시지 수정 실패:', error);
+    alert('수정에 실패했습니다.');
+  }
+};
+
+window.editMemorylog = async (id) => {
+  try {
+    const q = query(collection(db, 'memorylog'));
+    const snapshot = await getDocs(q);
+    let memorylogData = null;
+    
+    snapshot.forEach(doc => {
+      if (doc.id === id) {
+        memorylogData = doc.data();
+      }
+    });
+    
+    if (!memorylogData) return;
+    
+    const newTitle = prompt('제목을 수정하세요:', memorylogData.title);
+    if (newTitle === null) return;
+    
+    const newDescription = prompt('설명을 수정하세요:', memorylogData.description);
+    if (newDescription === null) return;
+    
+    await updateDoc(doc(db, 'memorylog', id), {
+      title: newTitle,
+      description: newDescription
+    });
+    
+    alert('타임라인이 수정되었습니다.');
+    loadMemorylogManage();
+    loadStats();
+  } catch (error) {
+    console.error('타임라인 수정 실패:', error);
+    alert('수정에 실패했습니다.');
+  }
+};
 
 window.deleteBlog = async (id) => {
   if (confirm('이 블로그 글을 삭제하시겠습니까?')) {

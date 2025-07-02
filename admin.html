@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <title>Admin | 기록: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/media.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/admin.js"></script>
-  <script src="js/swipe-back.js"></script>
   <style>
     @font-face {
       font-family: 'Chosunilbo_myungjo';
@@ -127,36 +125,46 @@
       margin-bottom: 0.5rem;
     }
 
+    .admin-buttons {
+      margin-top: 0.8rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .edit-btn {
+      background: linear-gradient(135deg, #8d8d8d, #8d8d8d);
+      color: black;
+      border: none;
+      border-radius: 4px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s ease;
+      font-family: 'Chosunilbo_myungjo';
+    }
+
+    .edit-btn:hover {
+      background: linear-gradient(135deg, #2a2a2a, #2a2a2a);
+      color: white;
+      transform: translateY(-1px);
+    }
+
     .delete-btn {
-      position: absolute;
-      top: 0.8rem;
-      right: 0.8rem;
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(135deg, #ff4757, #ff3742);
+      background: linear-gradient(135deg, #2a2a2a, #2a2a2a);
       color: white;
       border: none;
       border-radius: 4px;
+      padding: 0.4rem 0.8rem;
       cursor: pointer;
       font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       transition: all 0.3s ease;
-      opacity: 0.8;
+      font-family: 'Chosunilbo_myungjo';
     }
 
     .delete-btn:hover {
-      opacity: 1;
-      transform: translateY(-1px) scale(1.1);
-      background: linear-gradient(135deg, #ff3742, #ff2d37);
-    }
-
-    .delete-btn::before {
-      content: '×';
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1;
+      background: linear-gradient(135deg, #8d8d8d, #8d8d8d);
+      color: black;
+      transform: translateY(-1px);
     }
 
     .logout-btn {
