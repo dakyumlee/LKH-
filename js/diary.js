@@ -136,6 +136,14 @@ function openEditModal(id, title, text) {
   `;
   
   document.body.appendChild(modal);
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeEditModal();
+    }
+  });
+  
+  document.addEventListener('keydown', handleEscapeKey);
 }
 
 window.saveEdit = async () => {
@@ -167,7 +175,14 @@ window.closeEditModal = () => {
     modal.remove();
   }
   editingId = null;
+  document.removeEventListener('keydown', handleEscapeKey);
 };
+
+function handleEscapeKey(e) {
+  if (e.key === 'Escape') {
+    closeEditModal();
+  }
+}
 
 function observeDiaryEntries() {
   const entries = document.querySelectorAll('.diary-entry');

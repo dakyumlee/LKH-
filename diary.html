@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <title>글 서랍 | 기록: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/media.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/diary.js"></script>
+  <script src="js/swipe-back.js"></script>
   <style>
     .diary-wrap {
       max-width: 800px;
@@ -309,7 +311,7 @@
     }
   </style>
 </head>
-<body>
+<body class="page-transition">
   <header>
     <h1><a href="index.html">기록</a>, Diary</h1>
     <nav>
@@ -339,5 +341,7 @@
 
     <section id="diaryList" class="diary-list"></section>
   </main>
+
+  <div class="swipe-indicator">←</div>
 </body>
 </html>
