@@ -354,6 +354,83 @@ async function loadMemorylogManage() {
   }
 }
 
+function createModal(title, fields, onSave) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  
+  let fieldsHTML = '';
+  fields.forEach(field => {
+    if (field.type === 'textarea') {
+      fieldsHTML += `
+        <div class="modal-field">
+          <label>${field.label}:</label>
+          <textarea id="modal-${field.name}" rows="5">${field.value}</textarea>
+        </div>
+      `;
+    } else {
+      fieldsHTML += `
+        <div class="modal-field">
+          <label>${field.label}:</label>
+          <input type="text" id="modal-${field.name}" value="${field.value}">
+        </div>
+      `;
+    }
+  });
+  
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>${title}</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        ${fieldsHTML}
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel">취소</button>
+        <button class="modal-save">저장</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  const closeBtn = modal.querySelector('.modal-close');
+  const cancelBtn = modal.querySelector('.modal-cancel');
+  const saveBtn = modal.querySelector('.modal-save');
+  
+  const closeModal = () => {
+    modal.style.opacity = '0';
+    setTimeout(() => document.body.removeChild(modal), 300);
+  };
+  
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  
+  saveBtn.addEventListener('click', () => {
+    const values = {};
+    fields.forEach(field => {
+      values[field.name] = document.getElementById(`modal-${field.name}`).value;
+    });
+    onSave(values);
+    closeModal();
+  });
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+      document.removeEventListener('keydown', handleEsc);
+    }
+  };
+  document.addEventListener('keydown', handleEsc);
+  
+  setTimeout(() => modal.style.opacity = '1', 10);
+}
+
 window.editBlog = async (id) => {
   try {
     const q = query(collection(db, 'blogs'));
@@ -368,23 +445,27 @@ window.editBlog = async (id) => {
     
     if (!blogData) return;
     
-    const newTitle = prompt('제목을 수정하세요:', blogData.title);
-    if (newTitle === null) return;
-    
-    const newContent = prompt('내용을 수정하세요:', blogData.content);
-    if (newContent === null) return;
-    
-    await updateDoc(doc(db, 'blogs', id), {
-      title: newTitle,
-      content: newContent
+    createModal('블로그 수정', [
+      { name: 'title', label: '제목', value: blogData.title, type: 'text' },
+      { name: 'content', label: '내용', value: blogData.content, type: 'textarea' }
+    ], async (values) => {
+      try {
+        await updateDoc(doc(db, 'blogs', id), {
+          title: values.title,
+          content: values.content
+        });
+        
+        alert('블로그 글이 수정되었습니다.');
+        loadBlogs();
+        loadStats();
+      } catch (error) {
+        console.error('블로그 수정 실패:', error);
+        alert('수정에 실패했습니다.');
+      }
     });
-    
-    alert('블로그 글이 수정되었습니다.');
-    loadBlogs();
-    loadStats();
   } catch (error) {
-    console.error('블로그 수정 실패:', error);
-    alert('수정에 실패했습니다.');
+    console.error('블로그 로드 실패:', error);
+    alert('데이터를 불러오는데 실패했습니다.');
   }
 };
 
@@ -402,19 +483,25 @@ window.editGallery = async (id) => {
     
     if (!galleryData) return;
     
-    const newCaption = prompt('설명을 수정하세요:', galleryData.caption);
-    if (newCaption === null) return;
-    
-    await updateDoc(doc(db, 'gallery', id), {
-      caption: newCaption
+    createModal('갤러리 수정', [
+      { name: 'caption', label: '설명', value: galleryData.caption, type: 'text' }
+    ], async (values) => {
+      try {
+        await updateDoc(doc(db, 'gallery', id), {
+          caption: values.caption
+        });
+        
+        alert('갤러리 설명이 수정되었습니다.');
+        loadGalleryManage();
+        loadStats();
+      } catch (error) {
+        console.error('갤러리 수정 실패:', error);
+        alert('수정에 실패했습니다.');
+      }
     });
-    
-    alert('갤러리 설명이 수정되었습니다.');
-    loadGalleryManage();
-    loadStats();
   } catch (error) {
-    console.error('갤러리 수정 실패:', error);
-    alert('수정에 실패했습니다.');
+    console.error('갤러리 로드 실패:', error);
+    alert('데이터를 불러오는데 실패했습니다.');
   }
 };
 
@@ -432,23 +519,27 @@ window.editYouTube = async (id) => {
     
     if (!youtubeData) return;
     
-    const newUrl = prompt('YouTube URL을 수정하세요:', youtubeData.videoUrl);
-    if (newUrl === null) return;
-    
-    const newDescription = prompt('설명을 수정하세요:', youtubeData.description);
-    if (newDescription === null) return;
-    
-    await updateDoc(doc(db, 'youtube', id), {
-      videoUrl: newUrl,
-      description: newDescription
+    createModal('YouTube 수정', [
+      { name: 'videoUrl', label: 'YouTube URL', value: youtubeData.videoUrl, type: 'text' },
+      { name: 'description', label: '설명', value: youtubeData.description, type: 'textarea' }
+    ], async (values) => {
+      try {
+        await updateDoc(doc(db, 'youtube', id), {
+          videoUrl: values.videoUrl,
+          description: values.description
+        });
+        
+        alert('YouTube 영상이 수정되었습니다.');
+        loadYouTubeManage();
+        loadStats();
+      } catch (error) {
+        console.error('YouTube 수정 실패:', error);
+        alert('수정에 실패했습니다.');
+      }
     });
-    
-    alert('YouTube 영상이 수정되었습니다.');
-    loadYouTubeManage();
-    loadStats();
   } catch (error) {
-    console.error('YouTube 수정 실패:', error);
-    alert('수정에 실패했습니다.');
+    console.error('YouTube 로드 실패:', error);
+    alert('데이터를 불러오는데 실패했습니다.');
   }
 };
 
@@ -466,23 +557,27 @@ window.editDiary = async (id) => {
     
     if (!diaryData) return;
     
-    const newTitle = prompt('제목을 수정하세요:', diaryData.title);
-    if (newTitle === null) return;
-    
-    const newText = prompt('내용을 수정하세요:', diaryData.text);
-    if (newText === null) return;
-    
-    await updateDoc(doc(db, 'diary', id), {
-      title: newTitle,
-      text: newText
+    createModal('일기 수정', [
+      { name: 'title', label: '제목', value: diaryData.title, type: 'text' },
+      { name: 'text', label: '내용', value: diaryData.text, type: 'textarea' }
+    ], async (values) => {
+      try {
+        await updateDoc(doc(db, 'diary', id), {
+          title: values.title,
+          text: values.text
+        });
+        
+        alert('일기가 수정되었습니다.');
+        loadDiaryManage();
+        loadStats();
+      } catch (error) {
+        console.error('일기 수정 실패:', error);
+        alert('수정에 실패했습니다.');
+      }
     });
-    
-    alert('일기가 수정되었습니다.');
-    loadDiaryManage();
-    loadStats();
   } catch (error) {
-    console.error('일기 수정 실패:', error);
-    alert('수정에 실패했습니다.');
+    console.error('일기 로드 실패:', error);
+    alert('데이터를 불러오는데 실패했습니다.');
   }
 };
 
@@ -500,19 +595,25 @@ window.editAnonymous = async (id) => {
     
     if (!anonymousData) return;
     
-    const newText = prompt('내용을 수정하세요:', anonymousData.text);
-    if (newText === null) return;
-    
-    await updateDoc(doc(db, 'anonymous', id), {
-      text: newText
+    createModal('익명메시지 수정', [
+      { name: 'text', label: '내용', value: anonymousData.text, type: 'textarea' }
+    ], async (values) => {
+      try {
+        await updateDoc(doc(db, 'anonymous', id), {
+          text: values.text
+        });
+        
+        alert('익명메시지가 수정되었습니다.');
+        loadAnonymousManage();
+        loadStats();
+      } catch (error) {
+        console.error('익명메시지 수정 실패:', error);
+        alert('수정에 실패했습니다.');
+      }
     });
-    
-    alert('익명메시지가 수정되었습니다.');
-    loadAnonymousManage();
-    loadStats();
   } catch (error) {
-    console.error('익명메시지 수정 실패:', error);
-    alert('수정에 실패했습니다.');
+    console.error('익명메시지 로드 실패:', error);
+    alert('데이터를 불러오는데 실패했습니다.');
   }
 };
 
@@ -530,23 +631,27 @@ window.editMemorylog = async (id) => {
     
     if (!memorylogData) return;
     
-    const newTitle = prompt('제목을 수정하세요:', memorylogData.title);
-    if (newTitle === null) return;
-    
-    const newDescription = prompt('설명을 수정하세요:', memorylogData.description);
-    if (newDescription === null) return;
-    
-    await updateDoc(doc(db, 'memorylog', id), {
-      title: newTitle,
-      description: newDescription
+    createModal('타임라인 수정', [
+      { name: 'title', label: '제목', value: memorylogData.title, type: 'text' },
+      { name: 'description', label: '설명', value: memorylogData.description, type: 'textarea' }
+    ], async (values) => {
+      try {
+        await updateDoc(doc(db, 'memorylog', id), {
+          title: values.title,
+          description: values.description
+        });
+        
+        alert('타임라인이 수정되었습니다.');
+        loadMemorylogManage();
+        loadStats();
+      } catch (error) {
+        console.error('타임라인 수정 실패:', error);
+        alert('수정에 실패했습니다.');
+      }
     });
-    
-    alert('타임라인이 수정되었습니다.');
-    loadMemorylogManage();
-    loadStats();
   } catch (error) {
-    console.error('타임라인 수정 실패:', error);
-    alert('수정에 실패했습니다.');
+    console.error('타임라인 로드 실패:', error);
+    alert('데이터를 불러오는데 실패했습니다.');
   }
 };
 
