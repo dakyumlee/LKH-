@@ -75,7 +75,9 @@ function openLightbox(imageUrl, caption) {
   lightbox.innerHTML = `
     <div class="lightbox-overlay">
       <div class="lightbox-content">
-        <img src="${imageUrl}" alt="${caption}">
+        <div class="lightbox-image-container">
+          <img src="${imageUrl}" alt="${caption}">
+        </div>
         <p>${caption}</p>
         <button class="lightbox-close">&times;</button>
       </div>
@@ -100,24 +102,62 @@ function openLightbox(imageUrl, caption) {
   const overlay = lightbox.querySelector('.lightbox-overlay');
   overlay.style.cssText = `
     position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
+    max-width: 95vw;
+    max-height: 95vh;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  `;
+  
+  const imageContainer = lightbox.querySelector('.lightbox-image-container');
+  imageContainer.style.cssText = `
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow: auto;
+    border-radius: 8px;
+    background: #222;
+    position: relative;
   `;
   
   const img = lightbox.querySelector('img');
   img.style.cssText = `
-    max-width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
+    display: block;
+    max-width: none;
+    height: auto;
+    min-width: 100%;
     border-radius: 8px;
   `;
+  
+  img.onload = () => {
+    const containerRect = imageContainer.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+    
+    if (img.naturalWidth > containerRect.width || img.naturalHeight > containerRect.height) {
+      img.style.maxWidth = 'none';
+      img.style.width = 'auto';
+      img.style.height = 'auto';
+      
+      if (img.naturalWidth < containerRect.width) {
+        img.style.width = '100%';
+      }
+      if (img.naturalHeight < containerRect.height) {
+        img.style.height = '100%';
+      }
+    } else {
+      img.style.maxWidth = '100%';
+      img.style.maxHeight = '100%';
+      img.style.objectFit = 'contain';
+    }
+  };
   
   const caption_p = lightbox.querySelector('p');
   caption_p.style.cssText = `
     color: white;
     margin-top: 1rem;
     font-size: 1.1rem;
+    max-width: 95vw;
+    word-wrap: break-word;
   `;
   
   const closeBtn = lightbox.querySelector('.lightbox-close');
@@ -131,8 +171,9 @@ function openLightbox(imageUrl, caption) {
     font-size: 30px;
     cursor: pointer;
     width: auto;
-    padding: 0;
+    padding: 5px;
     margin: 0;
+    z-index: 1001;
   `;
   
   document.body.appendChild(lightbox);
@@ -144,7 +185,9 @@ function openLightbox(imageUrl, caption) {
   const closeLightbox = () => {
     lightbox.style.opacity = '0';
     setTimeout(() => {
-      document.body.removeChild(lightbox);
+      if (document.body.contains(lightbox)) {
+        document.body.removeChild(lightbox);
+      }
     }, 300);
   };
   
@@ -162,6 +205,37 @@ function openLightbox(imageUrl, caption) {
     }
   };
   document.addEventListener('keydown', handleKeyPress);
+  
+  if (!document.querySelector('#lightbox-scroll-styles')) {
+    const scrollStyles = document.createElement('style');
+    scrollStyles.id = 'lightbox-scroll-styles';
+    scrollStyles.textContent = `
+      .lightbox-image-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      .lightbox-image-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+      
+      .lightbox-image-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+      }
+      
+      .lightbox-image-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+      
+      .lightbox-image-container {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
+      }
+    `;
+    document.head.appendChild(scrollStyles);
+  }
 }
 
 loadGallery();
