@@ -82,19 +82,7 @@ async function loadDiary() {
           e.preventDefault();
           const id = e.target.dataset.id;
           
-          if (confirm('이 일기를 삭제하시겠습니까?')) {
-            try {
-              await deleteDoc(doc(db, 'diary', id));
-              e.target.closest('.diary-entry').style.animation = 'fadeOut 0.3s ease forwards';
-              
-              setTimeout(() => {
-                loadDiary();
-              }, 300);
-            } catch (error) {
-              console.error('삭제 실패:', error);
-              alert('삭제에 실패했습니다.');
-            }
-          }
+          openAdminAuthModal('delete', id);
         });
       });
 
@@ -105,7 +93,7 @@ async function loadDiary() {
           const title = e.target.dataset.title;
           const text = e.target.dataset.text;
           
-          openEditModal(id, title, text);
+          openAdminAuthModal('edit', id, title, text);
         });
       });
     }
@@ -115,6 +103,116 @@ async function loadDiary() {
   } catch (error) {
     console.error('일기 로드 실패:', error);
     list.innerHTML = '<div class="empty-state">일기를 불러오는데 실패했습니다</div>';
+  }
+}
+
+function openAdminAuthModal(action, id, title = '', text = '') {
+  const modal = document.createElement('div');
+  modal.className = 'admin-auth-modal';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>관리자 인증</h3>
+      <p class="auth-message">${action === 'delete' ? '삭제' : '수정'} 권한이 필요합니다</p>
+      <input type="email" id="adminEmail" value="71karamm@gmail.com" placeholder="관리자 이메일" readonly>
+      <input type="password" id="adminPassword" placeholder="비밀번호" autofocus>
+      <div class="modal-buttons">
+        <button onclick="authenticateAdmin('${action}', '${id}', '${title}', '${text}')">인증</button>
+        <button onclick="closeAdminAuthModal()">취소</button>
+      </div>
+      <div class="auth-alternative">
+        <button class="admin-page-btn" onclick="goToAdminPage()">관리자 페이지로 이동</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeAdminAuthModal();
+    }
+  });
+  
+  document.addEventListener('keydown', handleAuthEscapeKey);
+  
+  const passwordInput = document.getElementById('adminPassword');
+  passwordInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      authenticateAdmin(action, id, title, text);
+    }
+  });
+}
+
+window.authenticateAdmin = async (action, id, title, text) => {
+  const password = document.getElementById('adminPassword').value.trim();
+  
+  if (!password) {
+    alert('비밀번호를 입력하세요');
+    return;
+  }
+  
+  try {
+    const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js");
+    
+    await signInWithEmailAndPassword(auth, '71karamm@gmail.com', password);
+    
+    closeAdminAuthModal();
+    
+    if (action === 'delete') {
+      if (confirm('이 일기를 삭제하시겠습니까?')) {
+        try {
+          await deleteDoc(doc(db, 'diary', id));
+          const entryElement = document.querySelector(`[data-id="${id}"]`).closest('.diary-entry');
+          entryElement.style.animation = 'fadeOut 0.3s ease forwards';
+          
+          setTimeout(() => {
+            loadDiary();
+          }, 300);
+        } catch (error) {
+          console.error('삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    } else if (action === 'edit') {
+      openEditModal(id, title, text);
+    }
+    
+  } catch (error) {
+    console.error('인증 실패:', error);
+    let errorMessage = "인증 실패: ";
+    switch(error.code) {
+      case 'auth/wrong-password':
+        errorMessage += "비밀번호가 틀렸습니다.";
+        break;
+      case 'auth/too-many-requests':
+        errorMessage += "너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요.";
+        break;
+      case 'auth/network-request-failed':
+        errorMessage += "네트워크 연결을 확인해주세요.";
+        break;
+      default:
+        errorMessage += "관리자 권한이 필요합니다.";
+    }
+    alert(errorMessage);
+  }
+};
+
+window.closeAdminAuthModal = () => {
+  const modal = document.querySelector('.admin-auth-modal');
+  if (modal) {
+    modal.remove();
+  }
+  document.removeEventListener('keydown', handleAuthEscapeKey);
+};
+
+window.goToAdminPage = () => {
+  closeAdminAuthModal();
+  window.location.href = 'admin.html';
+};
+
+function handleAuthEscapeKey(e) {
+  if (e.key === 'Escape') {
+    closeAdminAuthModal();
   }
 }
 
