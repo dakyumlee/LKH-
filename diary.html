@@ -2,16 +2,317 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>글 서랍 | <a href=index.html>기록</a>: 이기현</title>
+  <title>글 서랍 | 기록: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/media.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/diary.js"></script>
   <script src="js/swipe-back.js"></script>
+  <style>
+    .diary-wrap {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+    }
+
+    .diary-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background-color: #2a2a2a;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+
+    .diary-header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1rem;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    .diary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .diary-entry {
+      background-color: #2a2a2a;
+      border-radius: 8px;
+      padding: 2.5rem;
+      position: relative;
+      border: 1px solid #333;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .diary-entry:nth-child(even) {
+      animation-delay: 0.1s;
+    }
+
+    .diary-entry:nth-child(odd) {
+      animation-delay: 0.2s;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .diary-entry:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      border-color: #444;
+    }
+
+    .diary-entry h3 {
+      color: #ffffff;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      position: relative;
+      padding-bottom: 0.8rem;
+    }
+
+    .diary-entry h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 40px;
+      height: 2px;
+      background-color: #555;
+      border-radius: 1px;
+    }
+
+    .diary-entry p {
+      color: #d0d0d0;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      text-align: justify;
+      word-break: keep-all;
+    }
+
+    .diary-entry time {
+      color: #888;
+      font-size: 0.9rem;
+      font-weight: 400;
+      display: inline-block;
+      background: rgba(51, 51, 51, 0.7);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .admin-buttons {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .edit, .delete {
+      width: 32px;
+      height: 32px;
+      background-color: #444;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+    }
+
+    .edit:hover {
+      background-color: #007bff;
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .delete:hover {
+      background-color: #dc3545;
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .edit-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #2a2a2a;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      border: 1px solid #333;
+    }
+
+    .modal-content h3 {
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content input,
+    .modal-content textarea {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: #fff;
+      font-family: 'Chosunilbo_myungjo';
+    }
+
+    .modal-content textarea {
+      min-height: 200px;
+      resize: vertical;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .modal-buttons button {
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Chosunilbo_myungjo';
+    }
+
+    .modal-buttons button:first-child {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .modal-buttons button:last-child {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .modal-buttons button:hover {
+      opacity: 0.8;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    .empty-state::before {
+      content: "📔";
+      display: block;
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #888;
+    }
+
+    .loading::before {
+      content: "";
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #333;
+      border-top: 2px solid #888;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .diary-wrap {
+        padding: 0 1rem;
+      }
+
+      .diary-header {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .diary-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .diary-entry {
+        padding: 2rem;
+      }
+
+      .diary-entry h3 {
+        font-size: 1.2rem;
+      }
+
+      .diary-list {
+        gap: 2rem;
+      }
+
+      .modal-content {
+        padding: 1.5rem;
+        margin: 1rem;
+      }
+    }
+
+    #diaryForm {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-<header>
-    <h1><a href=index.html>기록</a>, Diary</h1>
+  <header>
+    <h1><a href="index.html">기록</a>, Diary</h1>
     <nav>
       <ul>
         <li><a href="about.html">About</a></li>
@@ -24,10 +325,12 @@
       </ul>
     </nav>
   </header>
+
   <main class="diary-wrap">
-    <h1>글 서랍</h1>
-    <p class="subtitle">글 쓰는 법은 모르지만</p>
-    <br>
+    <div class="diary-header">
+      <h1>글 서랍</h1>
+      <p class="subtitle">글 쓰는 법은 모르지만</p>
+    </div>
 
     <form id="diaryForm">
       <input type="text" id="diaryTitle" placeholder="제목" required>
