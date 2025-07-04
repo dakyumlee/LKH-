@@ -46,23 +46,23 @@
     .progress-line {
       width: 100%;
       max-width: 600px;
-      height: 4px;
+      height: 6px;
       background: #333;
-      border-radius: 2px;
+      border-radius: 3px;
       margin: 0 auto 1rem auto;
       position: relative;
       cursor: pointer;
-      transition: height 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .progress-line:hover {
-      height: 6px;
+      height: 8px;
     }
 
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, #666, #fff);
-      border-radius: 2px;
+      border-radius: 3px;
       width: 0%;
       transition: width 0.1s ease;
       position: relative;
@@ -71,69 +71,36 @@
     .progress-fill::after {
       content: '';
       position: absolute;
-      right: -6px;
+      right: -8px;
       top: 50%;
       transform: translateY(-50%);
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       background: #fff;
       border-radius: 50%;
       opacity: 0;
       transition: opacity 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     .progress-line:hover .progress-fill::after {
       opacity: 1;
     }
 
-    .music-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-    }
-
-    .play-btn {
-      width: 32px;
-      height: 32px;
-      border: 1px solid #666;
-      border-radius: 50%;
-      background: transparent;
-      color: #fff;
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .play-btn:hover {
-      border-color: #fff;
-      background: #fff;
-      color: #000;
-    }
-
     .time-display {
       color: #666;
       font-size: 0.75rem;
       font-family: monospace;
-      min-width: 80px;
+      text-align: center;
+      margin-top: 0.5rem;
     }
 
-    .youtube-container {
-      width: 200px;
-      height: 113px;
-      margin: 0 auto 1rem auto;
-      border-radius: 8px;
-      overflow: hidden;
-      background: #000;
-    }
-
-    .youtube-container iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+    .music-status {
+      color: #888;
+      font-size: 0.8rem;
+      text-align: center;
+      margin-top: 0.5rem;
+      font-style: italic;
     }
 
     @media (max-width: 768px) {
@@ -200,32 +167,20 @@
     <a href="admin.html" class="admin-link" title="관리자">⚙️</a>
   </footer>
 
-  <script src="https://www.youtube.com/iframe_api"></script>
   <script type="module">
     import { db } from './firebase/firebase.js';
     import { collection, getDocs, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-    let player;
-    let isPlaying = false;
-    let currentMusicData = null;
-    let duration = 0;
-    let currentTime = 0;
-    let progressInterval = null;
-    let isAPIReady = false;
-
-    window.onYouTubeIframeAPIReady = function() {
-      console.log('YouTube API 준비됨');
-      isAPIReady = true;
-      if (currentMusicData) {
-        initializePlayer();
-      }
+    // 전역 음악 상태 관리
+    window.globalMusicPlayer = window.globalMusicPlayer || {
+      audio: null,
+      isPlaying: false,
+      currentData: null,
+      progressElements: [],
+      timeElements: []
     };
 
-    function extractYoutubeId(url) {
-      const reg = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/;
-      const match = url.match(reg);
-      return match ? match[1] : '';
-    }
+    const player = window.globalMusicPlayer;
 
     function formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
@@ -233,178 +188,145 @@
       return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    function createMusicPlayer(data) {
-      const isAudioFile = data.isFile || (!data.url.includes('youtube.com') && !data.url.includes('youtu.be'));
+    function updateAllProgress() {
+      if (!player.audio) return;
       
-      if (isAudioFile) {
-        return `
-          <div class="music-info">
-            <h4>${data.title}</h4>
-            <div class="artist">${data.artist}</div>
-            ${data.description ? `<div class="description">${data.description}</div>` : ''}
-          </div>
-          <div class="progress-line" id="progressLine">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="music-controls">
-            <button class="play-btn" id="playBtn">▶</button>
-            <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
-          </div>
-          <audio id="audioPlayer" src="${data.url}" preload="metadata" style="display: none;"></audio>
-        `;
-      } else {
-        const videoId = extractYoutubeId(data.url);
-        return `
-          <div class="music-info">
-            <h4>${data.title}</h4>
-            <div class="artist">${data.artist}</div>
-            ${data.description ? `<div class="description">${data.description}</div>` : ''}
-          </div>
-          <div class="youtube-container">
-            <iframe
-              src="https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
-          </div>
-          <div class="progress-line" id="progressLine">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="music-controls">
-            <button class="play-btn" id="playBtn">▶</button>
-            <div class="time-display" id="timeDisplay">0:00 / 3:00</div>
-          </div>
-        `;
-      }
+      const currentTime = player.audio.currentTime;
+      const duration = player.audio.duration || 0;
+      const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+      
+      // 모든 프로그래스바 업데이트
+      player.progressElements.forEach(element => {
+        if (element && element.parentNode) {
+          element.style.width = `${percentage}%`;
+        }
+      });
+      
+      // 모든 시간 표시 업데이트
+      player.timeElements.forEach(element => {
+        if (element && element.parentNode) {
+          element.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        }
+      });
     }
 
-    function setupControls() {
-      const playBtn = document.getElementById('playBtn');
-      const progressLine = document.getElementById('progressLine');
-      const audioPlayer = document.getElementById('audioPlayer');
+    function initializeGlobalPlayer(data) {
+      if (player.audio) {
+        player.audio.pause();
+        player.audio.removeEventListener('timeupdate', updateAllProgress);
+        player.audio.removeEventListener('ended', handleEnded);
+      }
+
+      player.audio = new Audio(data.url);
+      player.audio.loop = true; // 무한루프 설정
+      player.currentData = data;
+      player.isPlaying = false;
+
+      player.audio.addEventListener('loadedmetadata', () => {
+        updateAllProgress();
+      });
+
+      player.audio.addEventListener('timeupdate', updateAllProgress);
       
-      if (audioPlayer) {
-        let duration = 0;
-        let isPlaying = false;
+      function handleEnded() {
+        // 무한루프이므로 이 이벤트는 발생하지 않지만, 혹시 모를 상황 대비
+        player.audio.currentTime = 0;
+        player.audio.play();
+      }
+      
+      player.audio.addEventListener('ended', handleEnded);
 
-        audioPlayer.addEventListener('loadedmetadata', () => {
-          duration = audioPlayer.duration;
-          document.getElementById('timeDisplay').textContent = `0:00 / ${formatTime(duration)}`;
-        });
+      console.log('글로벌 음악 플레이어 초기화됨:', data.title);
+    }
 
-        audioPlayer.addEventListener('timeupdate', () => {
-          if (isPlaying) {
-            const currentTime = audioPlayer.currentTime;
-            const percentage = (currentTime / duration) * 100;
-            document.getElementById('progressFill').style.width = `${percentage}%`;
-            document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-          }
-        });
+    function togglePlayback() {
+      if (!player.audio) return;
 
-        audioPlayer.addEventListener('ended', () => {
-          isPlaying = false;
-          playBtn.textContent = '▶';
-          document.getElementById('progressFill').style.width = '0%';
-          audioPlayer.currentTime = 0;
-        });
-
-        playBtn.addEventListener('click', () => {
-          if (isPlaying) {
-            audioPlayer.pause();
-            isPlaying = false;
-            playBtn.textContent = '▶';
-          } else {
-            audioPlayer.play();
-            isPlaying = true;
-            playBtn.textContent = '⏸';
-          }
-        });
-
-        progressLine.addEventListener('click', (e) => {
-          if (duration > 0) {
-            const rect = progressLine.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const percentage = clickX / rect.width;
-            const seekTime = percentage * duration;
-            audioPlayer.currentTime = seekTime;
-            
-            const newPercentage = (seekTime / duration) * 100;
-            document.getElementById('progressFill').style.width = `${newPercentage}%`;
-            document.getElementById('timeDisplay').textContent = `${formatTime(seekTime)} / ${formatTime(duration)}`;
-          }
-        });
-
-        document.addEventListener('keydown', (e) => {
-          if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-            e.preventDefault();
-            playBtn.click();
-          }
-        });
+      if (player.isPlaying) {
+        player.audio.pause();
+        player.isPlaying = false;
       } else {
-        let duration = 180;
-        let currentTime = 0;
-        let isPlaying = false;
-        let animationId = null;
-
-        function updateProgress() {
-          if (isPlaying && currentTime < duration) {
-            currentTime += 0.1;
-            const percentage = (currentTime / duration) * 100;
-            document.getElementById('progressFill').style.width = `${percentage}%`;
-            document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-            
-            if (currentTime >= duration) {
-              isPlaying = false;
-              playBtn.textContent = '▶';
-              currentTime = 0;
-              document.getElementById('progressFill').style.width = '0%';
-              document.getElementById('timeDisplay').textContent = `0:00 / ${formatTime(duration)}`;
-              if (animationId) {
-                cancelAnimationFrame(animationId);
-              }
-            } else {
-              animationId = requestAnimationFrame(updateProgress);
-            }
-          }
-        }
-
-        playBtn.addEventListener('click', () => {
-          if (isPlaying) {
-            isPlaying = false;
-            playBtn.textContent = '▶';
-            if (animationId) {
-              cancelAnimationFrame(animationId);
-            }
-          } else {
-            isPlaying = true;
-            playBtn.textContent = '⏸';
-            updateProgress();
-          }
-        });
-
-        progressLine.addEventListener('click', (e) => {
-          const rect = progressLine.getBoundingClientRect();
-          const clickX = e.clientX - rect.left;
-          const percentage = clickX / rect.width;
-          currentTime = percentage * duration;
-          document.getElementById('progressFill').style.width = `${percentage * 100}%`;
-          document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-        });
-
-        document.addEventListener('keydown', (e) => {
-          if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-            e.preventDefault();
-            playBtn.click();
-          }
-        });
-
-        window.addEventListener('beforeunload', () => {
-          if (animationId) {
-            cancelAnimationFrame(animationId);
-          }
+        player.audio.play().then(() => {
+          player.isPlaying = true;
+        }).catch(error => {
+          console.error('재생 실패:', error);
         });
       }
+      
+      updateStatusDisplay();
+    }
+
+    function updateStatusDisplay() {
+      const statusElements = document.querySelectorAll('.music-status');
+      statusElements.forEach(element => {
+        if (element && element.parentNode) {
+          element.textContent = player.isPlaying ? '재생 중...' : '일시정지됨';
+        }
+      });
+    }
+
+    function createMusicPlayer(data) {
+      // YouTube 링크인지 확인
+      const isYouTube = data.url.includes('youtube.com') || data.url.includes('youtu.be');
+      
+      if (isYouTube) {
+        // YouTube 링크는 표시하지 않음
+        return '';
+      }
+
+      return `
+        <div class="music-info">
+          <h4>${data.title}</h4>
+          <div class="artist">${data.artist}</div>
+          ${data.description ? `<div class="description">${data.description}</div>` : ''}
+        </div>
+        <div class="progress-line" data-progress-container>
+          <div class="progress-fill" data-progress-fill></div>
+        </div>
+        <div class="time-display" data-time-display>0:00 / 0:00</div>
+        <div class="music-status">클릭하여 재생</div>
+      `;
+    }
+
+    function setupMusicControls() {
+      const progressContainer = document.querySelector('[data-progress-container]');
+      const progressFill = document.querySelector('[data-progress-fill]');
+      const timeDisplay = document.querySelector('[data-time-display]');
+
+      if (!progressContainer || !progressFill || !timeDisplay) return;
+
+      // 전역 요소 배열에 추가
+      if (!player.progressElements.includes(progressFill)) {
+        player.progressElements.push(progressFill);
+      }
+      if (!player.timeElements.includes(timeDisplay)) {
+        player.timeElements.push(timeDisplay);
+      }
+
+      // 프로그래스바 클릭으로 재생/정지 토글
+      progressContainer.addEventListener('click', (e) => {
+        // 시크 기능도 함께 제공
+        if (player.audio && player.audio.duration > 0) {
+          const rect = progressContainer.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const percentage = clickX / rect.width;
+          const seekTime = percentage * player.audio.duration;
+          player.audio.currentTime = seekTime;
+        }
+        
+        // 재생/정지 토글
+        togglePlayback();
+      });
+
+      // 스페이스바로 재생/정지
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          togglePlayback();
+        }
+      });
+
+      updateAllProgress();
     }
 
     async function loadTodayMusic() {
@@ -414,25 +336,36 @@
         
         if (!snapshot.empty) {
           const data = snapshot.docs[0].data();
-          currentMusicData = data;
           
-          const musicSection = document.getElementById('todayMusic');
-          const musicContent = document.getElementById('musicContent');
+          //최선인가보다
+          const isYouTube = data.url.includes('youtube.com') || data.url.includes('youtu.be');
           
-          musicContent.innerHTML = createMusicPlayer(data);
-          musicSection.style.display = 'block';
-          
-          setupControls();
+          if (!isYouTube) {
+            const musicSection = document.getElementById('todayMusic');
+            const musicContent = document.getElementById('musicContent');
+            
+            musicContent.innerHTML = createMusicPlayer(data);
+            musicSection.style.display = 'block';
+            
+            if (!player.currentData || player.currentData.url !== data.url) {
+              initializeGlobalPlayer(data);
+            }
+            
+            setupMusicControls();
+            updateStatusDisplay();
+          }
         }
       } catch (error) {
         console.error('음악 로드 실패:', error);
       }
     }
 
-    window.addEventListener('beforeunload', () => {
-      stopProgressUpdate();
-      if (player && player.pauseVideo) {
-        player.pauseVideo();
+    window.addEventListener('beforeunload', (e) => {
+      const navigation = performance.getEntriesByType('navigation')[0];
+      if (navigation && navigation.type === 'reload') {
+        if (player.audio) {
+          player.audio.pause();
+        }
       }
     });
 
