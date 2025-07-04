@@ -8,107 +8,31 @@
   <script type="module" src="firebase/firebase.js"></script>
   <style>
     .today-music {
-      background-color: #2a2a2a;
-      padding: 1.5rem;
-      border-radius: 10px;
+      background: transparent;
+      padding: 2rem 0;
       margin: 2rem 0;
-      transition: 0.3s ease;
-    }
-
-    .today-music:hover {
-      background-color: #3a3a3a;
-    }
-
-    .today-music h3 {
-      color: #ffffff;
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
     }
 
     .music-content {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 1.5rem;
-      align-items: center;
+      display: block;
+      text-align: center;
     }
 
-    .music-progress {
-      width: 200px;
-      height: 113px;
-      background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #333;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .music-icon {
-      font-size: 2rem;
-      color: #666;
-      margin-bottom: 0.5rem;
-    }
-
-    .progress-bar {
-      width: 80%;
-      height: 4px;
-      background-color: #333;
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 0.5rem;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #4CAF50, #45a049);
-      border-radius: 2px;
-      animation: musicProgress 3s ease-in-out infinite;
-    }
-
-    @keyframes musicProgress {
-      0% { width: 0%; }
-      50% { width: 70%; }
-      100% { width: 0%; }
-    }
-
-    .music-wave {
-      display: flex;
-      gap: 2px;
-      align-items: end;
-      height: 20px;
-    }
-
-    .wave-bar {
-      width: 3px;
-      background: linear-gradient(to top, #ffffff, #ffffff);
-      border-radius: 2px;
-      animation: wave 1.5s ease-in-out infinite;
-    }
-
-    .wave-bar:nth-child(1) { animation-delay: 0s; }
-    .wave-bar:nth-child(2) { animation-delay: 0.1s; }
-    .wave-bar:nth-child(3) { animation-delay: 0.2s; }
-    .wave-bar:nth-child(4) { animation-delay: 0.3s; }
-    .wave-bar:nth-child(5) { animation-delay: 0.4s; }
-
-    @keyframes wave {
-      0%, 100% { height: 5px; }
-      50% { height: 20px; }
+    .music-info {
+      margin-bottom: 1.5rem;
     }
 
     .music-info h4 {
       color: #ffffff;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
+      margin-bottom: 0.3rem;
+      font-size: 1.1rem;
+      font-weight: 600;
     }
 
     .music-info .artist {
       color: #cccccc;
       font-size: 0.9rem;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.5rem;
     }
 
     .music-info .description {
@@ -116,20 +40,85 @@
       font-size: 0.85rem;
       line-height: 1.4;
       font-style: italic;
+      margin-bottom: 1rem;
     }
 
-    .listen-link {
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
-      display: inline-block;
-      transition: color 0.3s;
+    .progress-line {
+      width: 100%;
+      max-width: 600px;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      margin: 0 auto 1rem auto;
+      position: relative;
+      cursor: pointer;
+      transition: height 0.3s ease;
     }
 
-    .listen-link:hover {
-      color: #ffffff;
-      text-decoration: underline;
+    .progress-line:hover {
+      height: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #666, #fff);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s ease;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .progress-line:hover .progress-fill::after {
+      opacity: 1;
+    }
+
+    .music-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .play-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid #666;
+      border-radius: 50%;
+      background: transparent;
+      color: #fff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .play-btn:hover {
+      border-color: #fff;
+      background: #fff;
+      color: #000;
+    }
+
+    .time-display {
+      color: #666;
+      font-size: 0.75rem;
+      font-family: monospace;
+      min-width: 80px;
     }
 
     @media (max-width: 768px) {
@@ -138,7 +127,7 @@
         text-align: center;
       }
       
-      .music-progress {
+      .music-player {
         width: 100%;
         max-width: 300px;
         margin: 0 auto;
@@ -160,7 +149,6 @@
     </section>
 
     <section id="todayMusic" class="today-music" style="display: none;">
-      <h3>🎵 오늘의 음악</h3>
       <div id="musicContent" class="music-content"></div>
     </section>
 
@@ -182,6 +170,163 @@
     import { db } from './firebase/firebase.js';
     import { collection, getDocs, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
+    let isPlaying = false;
+    let currentMusicData = null;
+    let duration = 180;
+    let currentTime = 0;
+    let animationId = null;
+    let audioContext = null;
+    let oscillator = null;
+
+    function extractYoutubeId(url) {
+      const reg = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/;
+      const match = url.match(reg);
+      return match ? match[1] : '';
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function createMusicPlayer(data) {
+      return `
+        <div class="music-info">
+          <h4>${data.title}</h4>
+          <div class="artist">${data.artist}</div>
+          ${data.description ? `<div class="description">${data.description}</div>` : ''}
+        </div>
+        <div class="progress-line" id="progressLine">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="music-controls">
+          <button class="play-btn" id="playBtn">▶</button>
+          <div class="time-display" id="timeDisplay">0:00 / ${formatTime(duration)}</div>
+        </div>
+      `;
+    }
+
+    function createAudioContext() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBackgroundTone() {
+      createAudioContext();
+      
+      if (oscillator) {
+        oscillator.stop();
+        oscillator = null;
+      }
+
+      oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.05, audioContext.currentTime + duration);
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+
+    function stopBackgroundTone() {
+      if (oscillator) {
+        oscillator.stop();
+        oscillator = null;
+      }
+    }
+
+    function updateProgress() {
+      if (isPlaying && currentTime < duration) {
+        currentTime += 0.1;
+        const percentage = (currentTime / duration) * 100;
+        document.getElementById('progressFill').style.width = `${percentage}%`;
+        document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        
+        if (currentTime >= duration) {
+          isPlaying = false;
+          document.getElementById('playBtn').textContent = '▶';
+          currentTime = 0;
+          document.getElementById('progressFill').style.width = '0%';
+          document.getElementById('timeDisplay').textContent = `0:00 / ${formatTime(duration)}`;
+          stopBackgroundTone();
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+          }
+        } else {
+          animationId = requestAnimationFrame(updateProgress);
+        }
+      }
+    }
+
+    function setupMusicControls() {
+      const playBtn = document.getElementById('playBtn');
+      const progressLine = document.getElementById('progressLine');
+
+      playBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePlayPause();
+      });
+
+      progressLine.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const rect = progressLine.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        currentTime = percentage * duration;
+        document.getElementById('progressFill').style.width = `${percentage * 100}%`;
+        document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+      });
+
+      function togglePlayPause() {
+        if (isPlaying) {
+          // 정지
+          isPlaying = false;
+          playBtn.textContent = '▶';
+          stopBackgroundTone();
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+          }
+        } else {
+          isPlaying = true;
+          playBtn.textContent = '⏸';
+          playBackgroundTone();
+          updateProgress();
+          
+          //이걸꼭넣어야하나?씨발진짜유튜브 개새끼들존나쪼잔하네
+          if (currentMusicData) {
+            const videoId = extractYoutubeId(currentMusicData.url);
+            if (videoId) {
+              window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+            }
+          }
+        }
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          togglePlayPause();
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        stopBackgroundTone();
+      });
+    }
+
     async function loadTodayMusic() {
       try {
         const q = query(collection(db, 'music'), orderBy('createdAt', 'desc'), limit(1));
@@ -189,32 +334,14 @@
         
         if (!snapshot.empty) {
           const data = snapshot.docs[0].data();
+          currentMusicData = data;
           const musicSection = document.getElementById('todayMusic');
           const musicContent = document.getElementById('musicContent');
           
-          musicContent.innerHTML = `
-            <div class="music-progress">
-              <div class="music-icon">♪</div>
-              <div class="progress-bar">
-                <div class="progress-fill"></div>
-              </div>
-              <div class="music-wave">
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-              </div>
-            </div>
-            <div class="music-info">
-              <h4>${data.title}</h4>
-              <div class="artist">${data.artist}</div>
-              ${data.description ? `<div class="description">${data.description}</div>` : ''}
-              <a href="${data.url}" target="_blank" class="listen-link">들어보기 →</a>
-            </div>
-          `;
-          
+          musicContent.innerHTML = createMusicPlayer(data);
           musicSection.style.display = 'block';
+          
+          setupMusicControls();
         }
       } catch (error) {
         console.error('음악 로드 실패:', error);

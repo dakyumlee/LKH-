@@ -4,364 +4,95 @@
   <meta charset="UTF-8">
   <title>뒷면 | 기록: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/media.css">
   <script type="module" src="firebase/firebase.js"></script>
-  <script type="module" src="js/anonymous.js"></script>
-  <script src="js/swipe-back.js"></script>
   <style>
-    .anonymous-wrap {
-      max-width: 800px;
-      margin: 3rem auto;
-      padding: 0 1rem;
-    }
-
-    .anonymous-header {
-      text-align: center;
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background-color: #2a2a2a;
-      border-radius: 8px;
-      border: 1px solid #333;
-    }
-
-    .anonymous-header h1 {
-      font-size: 2.2rem;
-      margin-bottom: 0.5rem;
-      color: #ffffff;
-    }
-
-    .subtitle {
-      color: #888;
-      font-size: 1rem;
-      font-style: italic;
-      opacity: 0.8;
-    }
-
-    .anonymous-form {
-      background-color: #2a2a2a;
-      padding: 2rem;
-      border-radius: 8px;
-      border: 1px solid #333;
-      margin-bottom: 3rem;
-    }
-
-    .anonymous-form textarea {
-      width: 100%;
-      min-height: 120px;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #333;
-      color: #fff;
-      font-family: 'Chosunilbo_myungjo';
-      resize: vertical;
-      border: 2px solid transparent;
-      transition: all 0.3s ease;
-    }
-
-    .anonymous-form textarea:focus {
-      outline: none;
-      border-color: #555;
-      background-color: #3a3a3a;
-    }
-
-    .anonymous-form button {
-      width: 100%;
-      padding: 1rem;
-      background-color: #444;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-family: 'Chosunilbo_myungjo';
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    .anonymous-form button:hover {
-      background-color: #555;
-      transform: translateY(-1px);
-    }
-
-    .anonymous-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
     .anon-msg {
-      background-color: #2a2a2a;
-      border-radius: 8px;
-      padding: 2rem;
-      position: relative;
+      background: linear-gradient(135deg, #242424 0%, #1e1e1e 100%);
       border: 1px solid #333;
+      border-radius: 4px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
       transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .anon-msg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(to bottom, #555, #333);
       opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.6s ease forwards;
+      transition: opacity 0.3s ease;
+    }
+
+    .anon-msg:hover::before {
+      opacity: 1;
     }
 
     .anon-msg:hover {
+      border-color: #444;
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-      border-color: #444;
     }
 
     .anon-msg p {
-      color: #d0d0d0;
+      color: #cccccc;
       line-height: 1.7;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       font-size: 1rem;
-      word-break: keep-all;
     }
 
     .anon-msg time {
-      color: #888;
+      color: #777;
       font-size: 0.85rem;
       font-weight: 400;
-      display: inline-block;
-      background: rgba(51, 51, 51, 0.7);
-      padding: 0.3rem 0.8rem;
-      border-radius: 15px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .admin-buttons {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .edit, .delete {
-      width: 32px;
-      height: 32px;
-      background-color: #444;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      opacity: 0.7;
-    }
-
-    .edit:hover {
-      background-color: #007bff;
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    .delete:hover {
-      background-color: #dc3545;
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    .admin-auth-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1001;
-    }
-
-    .admin-auth-modal .modal-content {
-      background: #2a2a2a;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-      border: 1px solid #333;
-      text-align: center;
-    }
-
-    .auth-message {
-      color: #ccc;
-      margin-bottom: 1.5rem;
-      font-size: 0.95rem;
-    }
-
-    .auth-alternative {
-      margin-top: 1.5rem;
+      display: block;
       padding-top: 1rem;
       border-top: 1px solid #333;
     }
 
-    .admin-page-btn {
-      background-color: #28a745;
+    .delete-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #ff4757, #ff3742);
       color: white;
-      padding: 0.8rem 1.5rem;
       border: none;
-      border-radius: 5px;
+      border-radius: 4px;
       cursor: pointer;
-      font-family: 'Chosunilbo_myungjo';
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-    }
-
-    .admin-page-btn:hover {
-      background-color: #218838;
-      transform: translateY(-1px);
-    }
-
-    .edit-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
+      font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
-    }
-
-    .edit-modal .modal-content {
-      background: #2a2a2a;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 600px;
-      border: 1px solid #333;
-    }
-
-    .edit-modal h3 {
-      color: #fff;
-      margin-bottom: 1rem;
-    }
-
-    .edit-modal textarea {
-      width: 100%;
-      min-height: 150px;
-      margin-bottom: 1rem;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #333;
-      color: #fff;
-      font-family: 'Chosunilbo_myungjo';
-      resize: vertical;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-    }
-
-    .modal-buttons button {
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-family: 'Chosunilbo_myungjo';
-    }
-
-    .modal-buttons button:first-child {
-      background-color: #007bff;
-      color: white;
-    }
-
-    .modal-buttons button:last-child {
-      background-color: #6c757d;
-      color: white;
-    }
-
-    .modal-buttons button:hover {
+      transition: all 0.3s ease;
       opacity: 0.8;
+      font-family: inherit;
+      margin: 0;
+      padding: 0;
     }
 
-    .modal-content input,
-    .modal-content textarea {
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #333;
-      color: #fff;
-      font-family: 'Chosunilbo_myungjo';
+    .delete-btn:hover {
+      opacity: 1;
+      transform: translateY(-1px) scale(1.1);
+      background: linear-gradient(135deg, #ff3742, #ff2d37);
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: #666;
-      font-style: italic;
-    }
-
-    .empty-state::before {
-      content: "💭";
-      display: block;
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes fadeOut {
-      from {
-        opacity: 1;
-        transform: translateY(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .anonymous-wrap {
-        padding: 0 1rem;
-      }
-
-      .anonymous-header {
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-      }
-
-      .anonymous-header h1 {
-        font-size: 1.8rem;
-      }
-
-      .anonymous-form {
-        padding: 1.5rem;
-      }
-
-      .anon-msg {
-        padding: 1.5rem;
-      }
-
-      .modal-content {
-        padding: 1.5rem;
-        margin: 1rem;
-      }
+    .delete-btn::before {
+      content: '×';
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
     }
   </style>
 </head>
-<body class="page-transition">
-  <header>
+<body>
+<header>
     <h1><a href="index.html">기록</a>, Anonymous</h1>
     <nav>
       <ul>
@@ -375,21 +106,83 @@
       </ul>
     </nav>
   </header>
-
   <main class="anonymous-wrap">
-    <div class="anonymous-header">
-      <h1>뒷면</h1>
-      <p class="subtitle">익명으로 남기는 감정과 기억</p>
-    </div>
-
-    <form id="anonForm" class="anonymous-form">
-      <textarea id="anonText" placeholder="여기에 조용히 남겨보세요..." required></textarea>
+    <h1>뒷면</h1>
+    <br>
+    <p class="subtitle">익명으로 남기는 감정과 기억</p>
+<br>
+    <form id="anonForm">
+      <textarea id="anonText" placeholder="여기에 조용히 남겨보세요." required></textarea>
       <button type="submit">흘려보내기</button>
     </form>
 
     <section id="anonList" class="anonymous-list"></section>
   </main>
 
-  <div class="swipe-indicator">←</div>
+  <script type="module">
+    import { db, auth } from './firebase/firebase.js';
+    import { collection, addDoc, serverTimestamp, query, orderBy, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+    let isAdmin = false;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email === '71karamm@gmail.com') {
+        isAdmin = true;
+      }
+      loadMessages();
+    });
+
+    const form = document.getElementById('anonForm');
+    const textarea = document.getElementById('anonText');
+    const list = document.getElementById('anonList');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      await addDoc(collection(db, 'anonymous'), {
+        text,
+        createdAt: serverTimestamp()
+      });
+
+      textarea.value = '';
+      loadMessages();
+    });
+
+    async function loadMessages() {
+      list.innerHTML = '<p>불러오는 중...</p>';
+      const q = query(collection(db, 'anonymous'), orderBy('createdAt', 'desc'));
+      const snap = await getDocs(q);
+
+      list.innerHTML = '';
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        const div = document.createElement('div');
+        div.className = 'anon-msg';
+        div.innerHTML = `
+          <p>${data.text}</p>
+          <time>${data.createdAt?.toDate().toLocaleString() ?? ''}</time>
+          ${isAdmin ? `<button class="delete-btn" onclick="deleteAnonymous('${docSnap.id}')"></button>` : ''}
+        `;
+        div.style.opacity = 0;
+        list.appendChild(div);
+        setTimeout(() => div.style.opacity = 1, 100);
+      });
+    }
+
+    window.deleteAnonymous = async (id) => {
+      if (confirm('이 익명메시지를 삭제하시겠습니까?')) {
+        try {
+          await deleteDoc(doc(db, 'anonymous', id));
+          loadMessages();
+        } catch (error) {
+          console.error('익명메시지 삭제 실패:', error);
+          alert('삭제에 실패했습니다.');
+        }
+      }
+    };
+  </script>
 </body>
 </html>
