@@ -141,6 +141,31 @@
         max-width: 300px;
       }
     }
+
+    .admin-link {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      background: rgba(42, 42, 42, 0.9);
+      border: 1px solid #555;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    .admin-link:hover {
+      background: rgba(85, 85, 85, 0.9);
+      border-color: #777;
+      transform: scale(1.1);
+    }
   </style>
 </head>
 <body>
@@ -172,6 +197,7 @@
 
   <footer>
     <p><a href=login.html target="_blank">@</a> 기록: 이기현. All rights reserved.</p>
+    <a href="admin.html" class="admin-link" title="관리자">⚙️</a>
   </footer>
 
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -208,98 +234,177 @@
     }
 
     function createMusicPlayer(data) {
-      const videoId = extractYoutubeId(data.url);
+      const isAudioFile = data.isFile || (!data.url.includes('youtube.com') && !data.url.includes('youtu.be'));
       
-      return `
-        <div class="music-info">
-          <h4>${data.title}</h4>
-          <div class="artist">${data.artist}</div>
-          ${data.description ? `<div class="description">${data.description}</div>` : ''}
-        </div>
-        <div class="youtube-container">
-          <iframe
-            src="https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
-          </iframe>
-        </div>
-        <div class="progress-line" id="progressLine">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="music-controls">
-          <button class="play-btn" id="playBtn">▶</button>
-          <div class="time-display" id="timeDisplay">0:00 / 3:00</div>
-        </div>
-      `;
+      if (isAudioFile) {
+        return `
+          <div class="music-info">
+            <h4>${data.title}</h4>
+            <div class="artist">${data.artist}</div>
+            ${data.description ? `<div class="description">${data.description}</div>` : ''}
+          </div>
+          <div class="progress-line" id="progressLine">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="music-controls">
+            <button class="play-btn" id="playBtn">▶</button>
+            <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+          </div>
+          <audio id="audioPlayer" src="${data.url}" preload="metadata" style="display: none;"></audio>
+        `;
+      } else {
+        const videoId = extractYoutubeId(data.url);
+        return `
+          <div class="music-info">
+            <h4>${data.title}</h4>
+            <div class="artist">${data.artist}</div>
+            ${data.description ? `<div class="description">${data.description}</div>` : ''}
+          </div>
+          <div class="youtube-container">
+            <iframe
+              src="https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <div class="progress-line" id="progressLine">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="music-controls">
+            <button class="play-btn" id="playBtn">▶</button>
+            <div class="time-display" id="timeDisplay">0:00 / 3:00</div>
+          </div>
+        `;
+      }
     }
 
     function setupControls() {
       const playBtn = document.getElementById('playBtn');
       const progressLine = document.getElementById('progressLine');
+      const audioPlayer = document.getElementById('audioPlayer');
       
-      let duration = 180;
-      let currentTime = 0;
-      let isPlaying = false;
-      let animationId = null;
+      if (audioPlayer) {
+        let duration = 0;
+        let isPlaying = false;
 
-      function updateProgress() {
-        if (isPlaying && currentTime < duration) {
-          currentTime += 0.1;
-          const percentage = (currentTime / duration) * 100;
-          document.getElementById('progressFill').style.width = `${percentage}%`;
-          document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-          
-          if (currentTime >= duration) {
+        audioPlayer.addEventListener('loadedmetadata', () => {
+          duration = audioPlayer.duration;
+          document.getElementById('timeDisplay').textContent = `0:00 / ${formatTime(duration)}`;
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+          if (isPlaying) {
+            const currentTime = audioPlayer.currentTime;
+            const percentage = (currentTime / duration) * 100;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+          }
+        });
+
+        audioPlayer.addEventListener('ended', () => {
+          isPlaying = false;
+          playBtn.textContent = '▶';
+          document.getElementById('progressFill').style.width = '0%';
+          audioPlayer.currentTime = 0;
+        });
+
+        playBtn.addEventListener('click', () => {
+          if (isPlaying) {
+            audioPlayer.pause();
             isPlaying = false;
             playBtn.textContent = '▶';
-            currentTime = 0;
-            document.getElementById('progressFill').style.width = '0%';
-            document.getElementById('timeDisplay').textContent = `0:00 / ${formatTime(duration)}`;
+          } else {
+            audioPlayer.play();
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+          }
+        });
+
+        progressLine.addEventListener('click', (e) => {
+          if (duration > 0) {
+            const rect = progressLine.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const percentage = clickX / rect.width;
+            const seekTime = percentage * duration;
+            audioPlayer.currentTime = seekTime;
+            
+            const newPercentage = (seekTime / duration) * 100;
+            document.getElementById('progressFill').style.width = `${newPercentage}%`;
+            document.getElementById('timeDisplay').textContent = `${formatTime(seekTime)} / ${formatTime(duration)}`;
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            playBtn.click();
+          }
+        });
+      } else {
+        let duration = 180;
+        let currentTime = 0;
+        let isPlaying = false;
+        let animationId = null;
+
+        function updateProgress() {
+          if (isPlaying && currentTime < duration) {
+            currentTime += 0.1;
+            const percentage = (currentTime / duration) * 100;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+            
+            if (currentTime >= duration) {
+              isPlaying = false;
+              playBtn.textContent = '▶';
+              currentTime = 0;
+              document.getElementById('progressFill').style.width = '0%';
+              document.getElementById('timeDisplay').textContent = `0:00 / ${formatTime(duration)}`;
+              if (animationId) {
+                cancelAnimationFrame(animationId);
+              }
+            } else {
+              animationId = requestAnimationFrame(updateProgress);
+            }
+          }
+        }
+
+        playBtn.addEventListener('click', () => {
+          if (isPlaying) {
+            isPlaying = false;
+            playBtn.textContent = '▶';
             if (animationId) {
               cancelAnimationFrame(animationId);
             }
           } else {
-            animationId = requestAnimationFrame(updateProgress);
+            isPlaying = true;
+            playBtn.textContent = '⏸';
+            updateProgress();
           }
-        }
-      }
+        });
 
-      playBtn.addEventListener('click', () => {
-        if (isPlaying) {
-          isPlaying = false;
-          playBtn.textContent = '▶';
+        progressLine.addEventListener('click', (e) => {
+          const rect = progressLine.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const percentage = clickX / rect.width;
+          currentTime = percentage * duration;
+          document.getElementById('progressFill').style.width = `${percentage * 100}%`;
+          document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            playBtn.click();
+          }
+        });
+
+        window.addEventListener('beforeunload', () => {
           if (animationId) {
             cancelAnimationFrame(animationId);
           }
-        } else {
-          isPlaying = true;
-          playBtn.textContent = '⏸';
-          updateProgress();
-        }
-      });
-
-      progressLine.addEventListener('click', (e) => {
-        const rect = progressLine.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const percentage = clickX / rect.width;
-        currentTime = percentage * duration;
-        document.getElementById('progressFill').style.width = `${percentage * 100}%`;
-        document.getElementById('timeDisplay').textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-      });
-
-      document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-          e.preventDefault();
-          playBtn.click();
-        }
-      });
-
-      window.addEventListener('beforeunload', () => {
-        if (animationId) {
-          cancelAnimationFrame(animationId);
-        }
-      });
+        });
+      }
     }
 
     async function loadTodayMusic() {
@@ -323,7 +428,7 @@
         console.error('음악 로드 실패:', error);
       }
     }
-    //유튜브진짜 개시발쪼잔한새끼들이ㅣ치욕을잊지않으리라.
+
     window.addEventListener('beforeunload', () => {
       stopProgressUpdate();
       if (player && player.pauseVideo) {

@@ -491,7 +491,13 @@
         <form id="musicForm">
           <input type="text" id="musicTitle" placeholder="곡 제목" required>
           <input type="text" id="musicArtist" placeholder="아티스트" required>
-          <input type="url" id="musicUrl" placeholder="YouTube/Spotify 링크" class="music-url-input" required>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="color: #ccc; font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">음악 파일 또는 YouTube 링크</label>
+            <input type="file" id="musicFile" accept="audio/*" style="margin-bottom: 0.5rem;">
+            <input type="url" id="musicUrl" placeholder="또는 YouTube 링크" class="music-url-input">
+          </div>
+          
           <textarea id="musicDescription" placeholder="이 음악에 대한 설명이나 느낌" rows="3"></textarea>
           <button type="submit">오늘의 음악 설정</button>
         </form>
@@ -1225,11 +1231,32 @@
       e.preventDefault();
       const title = document.getElementById('musicTitle').value.trim();
       const artist = document.getElementById('musicArtist').value.trim();
+      const musicFile = document.getElementById('musicFile').files[0];
       const url = document.getElementById('musicUrl').value.trim();
       const description = document.getElementById('musicDescription').value.trim();
-      if (!title || !artist || !url) return alert('제목, 아티스트, 링크를 입력하세요');
+      
+      if (!title || !artist) return alert('제목과 아티스트를 입력하세요');
+      if (!musicFile && !url) return alert('음악 파일을 선택하거나 YouTube 링크를 입력하세요');
+
       try {
-        await addDoc(collection(db, 'music'), { title, artist, url, description, createdAt: serverTimestamp() });
+        let audioUrl = url;
+        let isFile = false;
+        
+        if (musicFile) {
+          const fileRef = ref(storage, `music/${Date.now()}_${musicFile.name}`);
+          const snapshot = await uploadBytes(fileRef, musicFile);
+          audioUrl = await getDownloadURL(snapshot.ref);
+          isFile = true;
+        }
+        
+        await addDoc(collection(db, 'music'), { 
+          title, 
+          artist, 
+          url: audioUrl,
+          isFile: isFile,
+          description, 
+          createdAt: serverTimestamp() 
+        });
         alert('오늘의 음악이 설정되었습니다.');
         document.getElementById('musicForm').reset();
         document.getElementById('musicPreview').style.display = 'none';
