@@ -171,7 +171,6 @@
     import { db } from './firebase/firebase.js';
     import { collection, getDocs, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-    // 전역 음악 상태 관리
     window.globalMusicPlayer = window.globalMusicPlayer || {
       audio: null,
       isPlaying: false,
@@ -195,14 +194,12 @@
       const duration = player.audio.duration || 0;
       const percentage = duration > 0 ? (currentTime / duration) * 100 : 0;
       
-      // 모든 프로그래스바 업데이트
       player.progressElements.forEach(element => {
         if (element && element.parentNode) {
           element.style.width = `${percentage}%`;
         }
       });
       
-      // 모든 시간 표시 업데이트
       player.timeElements.forEach(element => {
         if (element && element.parentNode) {
           element.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
@@ -218,7 +215,7 @@
       }
 
       player.audio = new Audio(data.url);
-      player.audio.loop = true; // 무한루프 설정
+      player.audio.loop = true;
       player.currentData = data;
       player.isPlaying = false;
 
@@ -229,14 +226,11 @@
       player.audio.addEventListener('timeupdate', updateAllProgress);
       
       function handleEnded() {
-        // 무한루프이므로 이 이벤트는 발생하지 않지만, 혹시 모를 상황 대비
         player.audio.currentTime = 0;
         player.audio.play();
       }
       
       player.audio.addEventListener('ended', handleEnded);
-
-      console.log('글로벌 음악 플레이어 초기화됨:', data.title);
     }
 
     function togglePlayback() {
@@ -260,17 +254,21 @@
       const statusElements = document.querySelectorAll('.music-status');
       statusElements.forEach(element => {
         if (element && element.parentNode) {
-          element.textContent = player.isPlaying ? '재생 중...' : '일시정지됨';
+          if (player.isPlaying) {
+            element.textContent = '재생 중...';
+          } else if (player.audio && player.audio.currentTime > 0) {
+            element.textContent = '일시정지됨';
+          } else {
+            element.textContent = '클릭하여 재생';
+          }
         }
       });
     }
 
     function createMusicPlayer(data) {
-      // YouTube 링크인지 확인
       const isYouTube = data.url.includes('youtube.com') || data.url.includes('youtu.be');
       
       if (isYouTube) {
-        // YouTube 링크는 표시하지 않음
         return '';
       }
 
@@ -295,7 +293,6 @@
 
       if (!progressContainer || !progressFill || !timeDisplay) return;
 
-      // 전역 요소 배열에 추가
       if (!player.progressElements.includes(progressFill)) {
         player.progressElements.push(progressFill);
       }
@@ -303,9 +300,7 @@
         player.timeElements.push(timeDisplay);
       }
 
-      // 프로그래스바 클릭으로 재생/정지 토글
       progressContainer.addEventListener('click', (e) => {
-        // 시크 기능도 함께 제공
         if (player.audio && player.audio.duration > 0) {
           const rect = progressContainer.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
@@ -314,11 +309,9 @@
           player.audio.currentTime = seekTime;
         }
         
-        // 재생/정지 토글
         togglePlayback();
       });
 
-      // 스페이스바로 재생/정지
       document.addEventListener('keydown', (e) => {
         if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
           e.preventDefault();
@@ -337,7 +330,6 @@
         if (!snapshot.empty) {
           const data = snapshot.docs[0].data();
           
-          //최선인가보다
           const isYouTube = data.url.includes('youtube.com') || data.url.includes('youtu.be');
           
           if (!isYouTube) {
@@ -359,7 +351,7 @@
         console.error('음악 로드 실패:', error);
       }
     }
-
+//난 유튜브를 저주한다
     window.addEventListener('beforeunload', (e) => {
       const navigation = performance.getEntriesByType('navigation')[0];
       if (navigation && navigation.type === 'reload') {
