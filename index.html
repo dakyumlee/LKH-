@@ -235,15 +235,15 @@
 
     function togglePlayback() {
       if (!player.audio) return;
-
+//힝... 개색갸!!
       if (player.isPlaying) {
         player.audio.pause();
         player.isPlaying = false;
       } else {
-        player.audio.play().then(() => {
-          player.isPlaying = true;
-        }).catch(error => {
+        player.isPlaying = true;
+        player.audio.play().catch(error => {
           console.error('재생 실패:', error);
+          player.isPlaying = false;
         });
       }
       
@@ -264,7 +264,7 @@
         }
       });
     }
-
+//제대로 작동해라.
     function createMusicPlayer(data) {
       const isYouTube = data.url.includes('youtube.com') || data.url.includes('youtu.be');
       
@@ -351,7 +351,7 @@
         console.error('음악 로드 실패:', error);
       }
     }
-//난 유튜브를 저주한다
+
     window.addEventListener('beforeunload', (e) => {
       const navigation = performance.getEntriesByType('navigation')[0];
       if (navigation && navigation.type === 'reload') {
