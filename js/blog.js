@@ -19,8 +19,19 @@ async function loadBlogs() {
       const data = doc.data();
       const item = document.createElement('article');
       item.className = 'blog-post';
+      
+      let imagesHtml = '';
+      if (data.images && data.images.length > 0) {
+        imagesHtml = `
+          <div class="blog-images">
+            ${data.images.map(url => `<img src="${url}" alt="blog image" loading="lazy">`).join('')}
+          </div>
+        `;
+      }
+      
       item.innerHTML = `
         <h3>${data.title}</h3>
+        ${imagesHtml}
         <p>${data.content}</p>
         <time>${data.createdAt?.toDate().toLocaleString() ?? ''}</time>
       `;

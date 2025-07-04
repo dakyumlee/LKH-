@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <title>Blog | <a href=index.html>기록</a>: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/media.css">
   <script type="module" src="firebase/firebase.js"></script>
   <script type="module" src="js/blog.js"></script>
-  <script src="js/swipe-back.js"></script>
   <style>
     @font-face {
     font-family: 'Chosunilbo_myungjo';
@@ -153,7 +151,6 @@ footer {
   margin: auto;
 }
 
-/* 향상된 블로그 스타일 */
 #blogList {
   display: flex;
   flex-direction: column;
@@ -218,6 +215,29 @@ footer {
   display: block;
   padding-top: 1rem;
   border-top: 1px solid #333;
+}
+
+.blog-images {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0 1.5rem 0;
+}
+
+.blog-images img {
+  width: 100%;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.blog-images img:hover {
+  transform: scale(1.02);
+}
+
+@media (min-width: 600px) {
+  .blog-images {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
 }
   </style>
 </head>

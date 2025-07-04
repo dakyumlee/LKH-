@@ -5,9 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>기록: 이기현</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/media.css">
   <script type="module" src="firebase/firebase.js"></script>
-  <script src="js/swipe-back.js"></script>
+  <style>
+    .today-music {
+      background-color: #2a2a2a;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin: 2rem 0;
+      transition: 0.3s ease;
+    }
+
+    .today-music:hover {
+      background-color: #3a3a3a;
+    }
+
+    .today-music h3 {
+      color: #ffffff;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .music-content {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .music-player {
+      width: 200px;
+      height: 113px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .music-player iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .music-info h4 {
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .music-info .artist {
+      color: #cccccc;
+      font-size: 0.9rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .music-info .description {
+      color: #aaaaaa;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      .music-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .music-player {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -20,6 +89,11 @@
       <h2>안녕하세요, 이기현입니다</h2>
       <p>말하지 않아도 남겨두고 싶은 날들이 있습니다. <br>이곳은 그런 기록들을 위한 작은 공간입니다.</p>
       <a href="about.html" style="text-decoration: underline;"></a>
+    </section>
+
+    <section id="todayMusic" class="today-music" style="display: none;">
+      <h3>🎵 오늘의 음악</h3>
+      <div id="musicContent" class="music-content"></div>
     </section>
 
     <section class="preview">
@@ -36,6 +110,47 @@
     <p><a href=login.html target="_blank">@</a> 기록: 이기현. All rights reserved.</p>
   </footer>
 
-  <script src="js/main.js"></script>
+  <script type="module">
+    import { db } from './firebase/firebase.js';
+    import { collection, getDocs, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+    function extractYoutubeId(url) {
+      const reg = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/;
+      const match = url.match(reg);
+      return match ? match[1] : '';
+    }
+
+    async function loadTodayMusic() {
+      try {
+        const q = query(collection(db, 'music'), orderBy('createdAt', 'desc'), limit(1));
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+          const data = snapshot.docs[0].data();
+          const musicSection = document.getElementById('todayMusic');
+          const musicContent = document.getElementById('musicContent');
+          
+          const videoId = extractYoutubeId(data.url);
+          
+          musicContent.innerHTML = `
+            <div class="music-player">
+              ${videoId ? `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>` : ''}
+            </div>
+            <div class="music-info">
+              <h4>${data.title}</h4>
+              <div class="artist">${data.artist}</div>
+              ${data.description ? `<div class="description">${data.description}</div>` : ''}
+            </div>
+          `;
+          
+          musicSection.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('음악 로드 실패:', error);
+      }
+    }
+
+    loadTodayMusic();
+  </script>
 </body>
 </html>

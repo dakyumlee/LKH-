@@ -8,7 +8,8 @@ import {
   doc, 
   orderBy, 
   query,
-  updateDoc 
+  setDoc,
+  limit
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { 
   ref, 
@@ -31,7 +32,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
- 
 window.logout = async () => {
   if (confirm('로그아웃 하시겠습니까?')) {
     try {
@@ -43,9 +43,7 @@ window.logout = async () => {
   }
 };
 
- 
 window.showSection = (sectionName) => {
- 
   document.querySelectorAll('.admin-section').forEach(section => {
     section.classList.remove('active');
   });
@@ -55,11 +53,8 @@ window.showSection = (sectionName) => {
   });
   
   document.getElementById(`${sectionName}-section`).classList.add('active');
-  
-  
   event.target.classList.add('active');
   
- 
   loadSectionData(sectionName);
 };
  
@@ -75,11 +70,12 @@ async function loadStats() {
     youtube: 0,
     diary: 0,
     anonymous: 0,
-    memorylog: 0
+    memorylog: 0,
+    music: 0
   };
 
   try {
-    const collections = ['blogs', 'gallery', 'youtube', 'diary', 'anonymous', 'memorylog'];
+    const collections = ['blogs', 'gallery', 'youtube', 'diary', 'anonymous', 'memorylog', 'music'];
     
     for (const collectionName of collections) {
       const snapshot = await getDocs(collection(db, collectionName));
@@ -111,6 +107,10 @@ async function loadStats() {
         <div class="stat-number">${stats.memorylog}</div>
         <div class="stat-label">타임라인</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-number">${stats.music}</div>
+        <div class="stat-label">음악</div>
+      </div>
     `;
   } catch (error) {
     console.error('통계 로드 실패:', error);
@@ -137,6 +137,9 @@ async function loadSectionData(sectionName) {
     case 'memorylog':
       await loadMemorylogManage();
       break;
+    case 'music':
+      await loadMusicManage();
+      break;
   }
 }
 
@@ -158,14 +161,18 @@ async function loadBlogs() {
       const data = docSnap.data();
       const item = document.createElement('div');
       item.className = 'content-item';
+      
+      let imagesHtml = '';
+      if (data.images && data.images.length > 0) {
+        imagesHtml = data.images.map(url => `<img src="${url}" alt="blog image">`).join('');
+      }
+      
       item.innerHTML = `
         <h4>${data.title}</h4>
+        ${imagesHtml}
         <p>${data.content.substring(0, 100)}${data.content.length > 100 ? '...' : ''}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <div class="admin-buttons">
-          <button class="edit-btn" onclick="editBlog('${docSnap.id}')">수정</button>
-          <button class="delete-btn" onclick="deleteBlog('${docSnap.id}')">삭제</button>
-        </div>
+        <button class="delete-btn" onclick="deleteBlog('${docSnap.id}')">삭제</button>
       `;
       container.appendChild(item);
     });
@@ -198,10 +205,7 @@ async function loadGalleryManage() {
         <h4>사진</h4>
         <p>${data.caption}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <div class="admin-buttons">
-          <button class="edit-btn" onclick="editGallery('${docSnap.id}')">수정</button>
-          <button class="delete-btn" onclick="deleteGallery('${docSnap.id}', '${data.imageUrl}')">삭제</button>
-        </div>
+        <button class="delete-btn" onclick="deleteGallery('${docSnap.id}', '${data.imageUrl}')">삭제</button>
       `;
       container.appendChild(item);
     });
@@ -236,10 +240,7 @@ async function loadYouTubeManage() {
         <p>${data.description}</p>
         <p><a href="${data.videoUrl}" target="_blank">${data.videoUrl}</a></p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <div class="admin-buttons">
-          <button class="edit-btn" onclick="editYouTube('${docSnap.id}')">수정</button>
-          <button class="delete-btn" onclick="deleteYouTube('${docSnap.id}')">삭제</button>
-        </div>
+        <button class="delete-btn" onclick="deleteYouTube('${docSnap.id}')">삭제</button>
       `;
       container.appendChild(item);
     });
@@ -271,10 +272,7 @@ async function loadDiaryManage() {
         <h4>${data.title}</h4>
         <p>${data.text.substring(0, 100)}${data.text.length > 100 ? '...' : ''}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <div class="admin-buttons">
-          <button class="edit-btn" onclick="editDiary('${docSnap.id}')">수정</button>
-          <button class="delete-btn" onclick="deleteDiary('${docSnap.id}')">삭제</button>
-        </div>
+        <button class="delete-btn" onclick="deleteDiary('${docSnap.id}')">삭제</button>
       `;
       container.appendChild(item);
     });
@@ -306,10 +304,7 @@ async function loadAnonymousManage() {
         <h4>익명메시지</h4>
         <p>${data.text}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <div class="admin-buttons">
-          <button class="edit-btn" onclick="editAnonymous('${docSnap.id}')">수정</button>
-          <button class="delete-btn" onclick="deleteAnonymous('${docSnap.id}')">삭제</button>
-        </div>
+        <button class="delete-btn" onclick="deleteAnonymous('${docSnap.id}')">삭제</button>
       `;
       container.appendChild(item);
     });
@@ -341,10 +336,7 @@ async function loadMemorylogManage() {
         <h4>${data.title}</h4>
         <p>${data.description}</p>
         <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
-        <div class="admin-buttons">
-          <button class="edit-btn" onclick="editMemorylog('${docSnap.id}')">수정</button>
-          <button class="delete-btn" onclick="deleteMemorylog('${docSnap.id}')">삭제</button>
-        </div>
+        <button class="delete-btn" onclick="deleteMemorylog('${docSnap.id}')">삭제</button>
       `;
       container.appendChild(item);
     });
@@ -354,306 +346,51 @@ async function loadMemorylogManage() {
   }
 }
 
-function createModal(title, fields, onSave) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
+async function loadMusicManage() {
+  const currentContainer = document.getElementById('currentMusic');
+  const historyContainer = document.getElementById('musicHistory');
   
-  let fieldsHTML = '';
-  fields.forEach(field => {
-    if (field.type === 'textarea') {
-      fieldsHTML += `
-        <div class="modal-field">
-          <label>${field.label}:</label>
-          <textarea id="modal-${field.name}" rows="5">${field.value}</textarea>
-        </div>
-      `;
+  try {
+    const currentQ = query(collection(db, 'music'), orderBy('createdAt', 'desc'), limit(1));
+    const currentSnap = await getDocs(currentQ);
+    
+    if (currentSnap.empty) {
+      currentContainer.innerHTML = '<p>설정된 음악이 없습니다.</p>';
     } else {
-      fieldsHTML += `
-        <div class="modal-field">
-          <label>${field.label}:</label>
-          <input type="text" id="modal-${field.name}" value="${field.value}">
+      const data = currentSnap.docs[0].data();
+      const videoId = extractYoutubeId(data.url);
+      currentContainer.innerHTML = `
+        <div class="current-music">
+          <h4>${data.title} - ${data.artist}</h4>
+          ${videoId ? `<iframe width="300" height="169" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>` : ''}
+          <p>${data.description}</p>
+          <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
+          <button class="delete-btn" onclick="deleteMusic('${currentSnap.docs[0].id}')">삭제</button>
         </div>
       `;
     }
-  });
-  
-  modal.innerHTML = `
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>${title}</h3>
-        <button class="modal-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        ${fieldsHTML}
-      </div>
-      <div class="modal-footer">
-        <button class="modal-cancel">취소</button>
-        <button class="modal-save">저장</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  const closeBtn = modal.querySelector('.modal-close');
-  const cancelBtn = modal.querySelector('.modal-cancel');
-  const saveBtn = modal.querySelector('.modal-save');
-  
-  const closeModal = () => {
-    modal.style.opacity = '0';
-    setTimeout(() => document.body.removeChild(modal), 300);
-  };
-  
-  closeBtn.addEventListener('click', closeModal);
-  cancelBtn.addEventListener('click', closeModal);
-  
-  saveBtn.addEventListener('click', () => {
-    const values = {};
-    fields.forEach(field => {
-      values[field.name] = document.getElementById(`modal-${field.name}`).value;
+    
+    const historyQ = query(collection(db, 'music'), orderBy('createdAt', 'desc'));
+    const historySnap = await getDocs(historyQ);
+    
+    historyContainer.innerHTML = '';
+    historySnap.forEach(docSnap => {
+      const data = docSnap.data();
+      const item = document.createElement('div');
+      item.className = 'content-item';
+      item.innerHTML = `
+        <h4>${data.title} - ${data.artist}</h4>
+        <p>${data.description}</p>
+        <time>${data.createdAt?.toDate().toLocaleDateString('ko-KR') ?? ''}</time>
+        <button class="delete-btn" onclick="deleteMusic('${docSnap.id}')">삭제</button>
+      `;
+      historyContainer.appendChild(item);
     });
-    onSave(values);
-    closeModal();
-  });
-  
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-  
-  const handleEsc = (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      document.removeEventListener('keydown', handleEsc);
-    }
-  };
-  document.addEventListener('keydown', handleEsc);
-  
-  setTimeout(() => modal.style.opacity = '1', 10);
+  } catch (error) {
+    console.error('음악 로드 실패:', error);
+    currentContainer.innerHTML = '<p>음악을 불러오는데 실패했습니다.</p>';
+  }
 }
-
-window.editBlog = async (id) => {
-  try {
-    const q = query(collection(db, 'blogs'));
-    const snapshot = await getDocs(q);
-    let blogData = null;
-    
-    snapshot.forEach(doc => {
-      if (doc.id === id) {
-        blogData = doc.data();
-      }
-    });
-    
-    if (!blogData) return;
-    
-    createModal('블로그 수정', [
-      { name: 'title', label: '제목', value: blogData.title, type: 'text' },
-      { name: 'content', label: '내용', value: blogData.content, type: 'textarea' }
-    ], async (values) => {
-      try {
-        await updateDoc(doc(db, 'blogs', id), {
-          title: values.title,
-          content: values.content
-        });
-        
-        alert('블로그 글이 수정되었습니다.');
-        loadBlogs();
-        loadStats();
-      } catch (error) {
-        console.error('블로그 수정 실패:', error);
-        alert('수정에 실패했습니다.');
-      }
-    });
-  } catch (error) {
-    console.error('블로그 로드 실패:', error);
-    alert('데이터를 불러오는데 실패했습니다.');
-  }
-};
-
-window.editGallery = async (id) => {
-  try {
-    const q = query(collection(db, 'gallery'));
-    const snapshot = await getDocs(q);
-    let galleryData = null;
-    
-    snapshot.forEach(doc => {
-      if (doc.id === id) {
-        galleryData = doc.data();
-      }
-    });
-    
-    if (!galleryData) return;
-    
-    createModal('갤러리 수정', [
-      { name: 'caption', label: '설명', value: galleryData.caption, type: 'text' }
-    ], async (values) => {
-      try {
-        await updateDoc(doc(db, 'gallery', id), {
-          caption: values.caption
-        });
-        
-        alert('갤러리 설명이 수정되었습니다.');
-        loadGalleryManage();
-        loadStats();
-      } catch (error) {
-        console.error('갤러리 수정 실패:', error);
-        alert('수정에 실패했습니다.');
-      }
-    });
-  } catch (error) {
-    console.error('갤러리 로드 실패:', error);
-    alert('데이터를 불러오는데 실패했습니다.');
-  }
-};
-
-window.editYouTube = async (id) => {
-  try {
-    const q = query(collection(db, 'youtube'));
-    const snapshot = await getDocs(q);
-    let youtubeData = null;
-    
-    snapshot.forEach(doc => {
-      if (doc.id === id) {
-        youtubeData = doc.data();
-      }
-    });
-    
-    if (!youtubeData) return;
-    
-    createModal('YouTube 수정', [
-      { name: 'videoUrl', label: 'YouTube URL', value: youtubeData.videoUrl, type: 'text' },
-      { name: 'description', label: '설명', value: youtubeData.description, type: 'textarea' }
-    ], async (values) => {
-      try {
-        await updateDoc(doc(db, 'youtube', id), {
-          videoUrl: values.videoUrl,
-          description: values.description
-        });
-        
-        alert('YouTube 영상이 수정되었습니다.');
-        loadYouTubeManage();
-        loadStats();
-      } catch (error) {
-        console.error('YouTube 수정 실패:', error);
-        alert('수정에 실패했습니다.');
-      }
-    });
-  } catch (error) {
-    console.error('YouTube 로드 실패:', error);
-    alert('데이터를 불러오는데 실패했습니다.');
-  }
-};
-
-window.editDiary = async (id) => {
-  try {
-    const q = query(collection(db, 'diary'));
-    const snapshot = await getDocs(q);
-    let diaryData = null;
-    
-    snapshot.forEach(doc => {
-      if (doc.id === id) {
-        diaryData = doc.data();
-      }
-    });
-    
-    if (!diaryData) return;
-    
-    createModal('일기 수정', [
-      { name: 'title', label: '제목', value: diaryData.title, type: 'text' },
-      { name: 'text', label: '내용', value: diaryData.text, type: 'textarea' }
-    ], async (values) => {
-      try {
-        await updateDoc(doc(db, 'diary', id), {
-          title: values.title,
-          text: values.text
-        });
-        
-        alert('일기가 수정되었습니다.');
-        loadDiaryManage();
-        loadStats();
-      } catch (error) {
-        console.error('일기 수정 실패:', error);
-        alert('수정에 실패했습니다.');
-      }
-    });
-  } catch (error) {
-    console.error('일기 로드 실패:', error);
-    alert('데이터를 불러오는데 실패했습니다.');
-  }
-};
-
-window.editAnonymous = async (id) => {
-  try {
-    const q = query(collection(db, 'anonymous'));
-    const snapshot = await getDocs(q);
-    let anonymousData = null;
-    
-    snapshot.forEach(doc => {
-      if (doc.id === id) {
-        anonymousData = doc.data();
-      }
-    });
-    
-    if (!anonymousData) return;
-    
-    createModal('익명메시지 수정', [
-      { name: 'text', label: '내용', value: anonymousData.text, type: 'textarea' }
-    ], async (values) => {
-      try {
-        await updateDoc(doc(db, 'anonymous', id), {
-          text: values.text
-        });
-        
-        alert('익명메시지가 수정되었습니다.');
-        loadAnonymousManage();
-        loadStats();
-      } catch (error) {
-        console.error('익명메시지 수정 실패:', error);
-        alert('수정에 실패했습니다.');
-      }
-    });
-  } catch (error) {
-    console.error('익명메시지 로드 실패:', error);
-    alert('데이터를 불러오는데 실패했습니다.');
-  }
-};
-
-window.editMemorylog = async (id) => {
-  try {
-    const q = query(collection(db, 'memorylog'));
-    const snapshot = await getDocs(q);
-    let memorylogData = null;
-    
-    snapshot.forEach(doc => {
-      if (doc.id === id) {
-        memorylogData = doc.data();
-      }
-    });
-    
-    if (!memorylogData) return;
-    
-    createModal('타임라인 수정', [
-      { name: 'title', label: '제목', value: memorylogData.title, type: 'text' },
-      { name: 'description', label: '설명', value: memorylogData.description, type: 'textarea' }
-    ], async (values) => {
-      try {
-        await updateDoc(doc(db, 'memorylog', id), {
-          title: values.title,
-          description: values.description
-        });
-        
-        alert('타임라인이 수정되었습니다.');
-        loadMemorylogManage();
-        loadStats();
-      } catch (error) {
-        console.error('타임라인 수정 실패:', error);
-        alert('수정에 실패했습니다.');
-      }
-    });
-  } catch (error) {
-    console.error('타임라인 로드 실패:', error);
-    alert('데이터를 불러오는데 실패했습니다.');
-  }
-};
 
 window.deleteBlog = async (id) => {
   if (confirm('이 블로그 글을 삭제하시겠습니까?')) {
@@ -747,6 +484,20 @@ window.deleteMemorylog = async (id) => {
   }
 };
 
+window.deleteMusic = async (id) => {
+  if (confirm('이 음악을 삭제하시겠습니까?')) {
+    try {
+      await deleteDoc(doc(db, 'music', id));
+      alert('음악이 삭제되었습니다.');
+      loadMusicManage();
+      loadStats();
+    } catch (error) {
+      console.error('음악 삭제 실패:', error);
+      alert('삭제에 실패했습니다.');
+    }
+  }
+};
+
 function extractYoutubeId(url) {
   const reg = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/;
   const match = url.match(reg);
@@ -758,16 +509,32 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const title = document.getElementById('blogTitle').value.trim();
     const content = document.getElementById('blogContent').value.trim();
+    const imageFiles = document.getElementById('blogImages').files;
+    
     if (!title || !content) return alert('제목과 내용을 입력하세요');
     
     try {
+      const imageUrls = [];
+      
+      if (imageFiles.length > 0) {
+        for (let file of imageFiles) {
+          const fileRef = ref(storage, `blog/${Date.now()}_${file.name}`);
+          const snapshot = await uploadBytes(fileRef, file);
+          const url = await getDownloadURL(snapshot.ref);
+          imageUrls.push(url);
+        }
+      }
+      
       await addDoc(collection(db, 'blogs'), {
         title,
         content,
+        images: imageUrls,
         createdAt: serverTimestamp()
       });
+      
       alert('블로그 글이 업로드되었습니다.');
       document.getElementById('blogForm').reset();
+      document.getElementById('blogImagePreview').innerHTML = '';
       loadBlogs();
       loadStats();
     } catch (error) {
@@ -865,6 +632,34 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('타임라인 추가 실패:', error);
       alert('추가에 실패했습니다.');
+    }
+  });
+
+  document.getElementById('musicForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('musicTitle').value.trim();
+    const artist = document.getElementById('musicArtist').value.trim();
+    const url = document.getElementById('musicUrl').value.trim();
+    const description = document.getElementById('musicDescription').value.trim();
+    
+    if (!title || !artist || !url) return alert('제목, 아티스트, 링크를 입력하세요');
+
+    try {
+      await addDoc(collection(db, 'music'), {
+        title,
+        artist,
+        url,
+        description,
+        createdAt: serverTimestamp()
+      });
+      alert('오늘의 음악이 설정되었습니다.');
+      document.getElementById('musicForm').reset();
+      document.getElementById('musicPreview').style.display = 'none';
+      loadMusicManage();
+      loadStats();
+    } catch (error) {
+      console.error('음악 설정 실패:', error);
+      alert('설정에 실패했습니다.');
     }
   });
 });

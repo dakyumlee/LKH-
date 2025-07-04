@@ -36,6 +36,7 @@
       justify-content: center;
       gap: 1rem;
       margin-bottom: 1rem;
+      flex-wrap: wrap;
     }
 
     .admin-nav button {
@@ -46,6 +47,11 @@
       color: #fff;
       cursor: pointer;
       transition: background-color 0.3s;
+      font-size: 0.9rem;
+      font-family: 'Chosunilbo_myungjo';
+      min-width: auto;
+      width: auto;
+      margin-bottom: 0;
     }
 
     .admin-nav button:hover {
@@ -53,6 +59,39 @@
     }
 
     .admin-nav button.active {
+      background-color: #666;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: #fff;
+      font-family: 'Chosunilbo_myungjo';
+    }
+
+    button {
+      background-color: #444;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    .image-upload-area button {
+      width: auto;
+      margin: 0;
+      padding: 0.5rem 1rem;
+      background-color: #555;
+      font-size: 0.9rem;
+    }
+
+    .image-upload-area button:hover {
       background-color: #666;
     }
 
@@ -125,46 +164,36 @@
       margin-bottom: 0.5rem;
     }
 
-    .admin-buttons {
-      margin-top: 0.8rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .edit-btn {
-      background: linear-gradient(135deg, #8d8d8d, #8d8d8d);
-      color: black;
-      border: none;
-      border-radius: 4px;
-      padding: 0.4rem 0.8rem;
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.3s ease;
-      font-family: 'Chosunilbo_myungjo';
-    }
-
-    .edit-btn:hover {
-      background: linear-gradient(135deg, #2a2a2a, #2a2a2a);
-      color: white;
-      transform: translateY(-1px);
-    }
-
     .delete-btn {
-      background: linear-gradient(135deg, #2a2a2a, #2a2a2a);
+      position: absolute;
+      top: 0.8rem;
+      right: 0.8rem;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #ff4757, #ff3742);
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 0.4rem 0.8rem;
       cursor: pointer;
       font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.3s ease;
-      font-family: 'Chosunilbo_myungjo';
+      opacity: 0.8;
     }
 
     .delete-btn:hover {
-      background: linear-gradient(135deg, #8d8d8d, #8d8d8d);
-      color: black;
-      transform: translateY(-1px);
+      opacity: 1;
+      transform: translateY(-1px) scale(1.1);
+      background: linear-gradient(135deg, #ff3742, #ff2d37);
+    }
+
+    .delete-btn::before {
+      content: '×';
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1;
     }
 
     .logout-btn {
@@ -190,7 +219,7 @@
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 1rem;
       margin-bottom: 2rem;
     }
@@ -213,139 +242,88 @@
       font-size: 0.9rem;
     }
 
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal-content {
-      background: #2a2a2a;
+    .image-upload-area {
+      border: 2px dashed #555;
       border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
-      max-height: 80vh;
-      overflow-y: auto;
-      border: 1px solid #444;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       padding: 1.5rem;
-      border-bottom: 1px solid #444;
+      margin-bottom: 1rem;
+      text-align: center;
+      background-color: #333;
+      transition: all 0.3s ease;
     }
 
-    .modal-header h3 {
-      margin: 0;
-      color: #fff;
-      font-size: 1.2rem;
+    .image-upload-area:hover {
+      border-color: #777;
+      background-color: #3a3a3a;
     }
 
-    .modal-close {
-      background: none;
+    .image-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .preview-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+    }
+
+    .remove-image {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(255, 71, 87, 0.9);
       border: none;
-      color: #ccc;
-      font-size: 24px;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      color: white;
       cursor: pointer;
-      padding: 0;
-      width: 30px;
-      height: 30px;
+      font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 50%;
-      transition: all 0.2s ease;
     }
 
-    .modal-close:hover {
-      background: #444;
-      color: #fff;
-    }
-
-    .modal-body {
-      padding: 1.5rem;
-    }
-
-    .modal-field {
-      margin-bottom: 1rem;
-    }
-
-    .modal-field label {
-      display: block;
+    .music-url-input {
       margin-bottom: 0.5rem;
-      color: #ccc;
-      font-weight: 500;
     }
 
-    .modal-field input,
-    .modal-field textarea {
+    .music-preview {
+      background-color: #333;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+
+    .current-music {
+      background-color: #2a4a2a;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border-left: 3px solid #4CAF50;
+    }
+
+    .blog-images-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .blog-images-preview img {
       width: 100%;
-      padding: 0.8rem;
-      border: 1px solid #555;
+      height: 60px;
+      object-fit: cover;
       border-radius: 4px;
-      background: #3a3a3a;
-      color: #fff;
-      font-family: 'Chosunilbo_myungjo';
-      resize: vertical;
-      box-sizing: border-box;
-    }
-
-    .modal-field input:focus,
-    .modal-field textarea:focus {
-      outline: none;
-      border-color: #666;
-      background: #404040;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.8rem;
-      padding: 1.5rem;
-      border-top: 1px solid #444;
-    }
-
-    .modal-cancel,
-    .modal-save {
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: 'Chosunilbo_myungjo';
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-    }
-
-    .modal-cancel {
-      background: #555;
-      color: #ccc;
-    }
-
-    .modal-cancel:hover {
-      background: #666;
-      color: #fff;
-    }
-
-    .modal-save {
-      background: #8d8d8d;
-      color: #000;
-    }
-
-    .modal-save:hover {
-      background: #2a2a2a;
-      color: #fff;
-      transform: translateY(-1px);
     }
   </style>
 </head>
@@ -363,6 +341,7 @@
       <button onclick="showSection('diary')" class="nav-btn">일기</button>
       <button onclick="showSection('anonymous')" class="nav-btn">익명메시지</button>
       <button onclick="showSection('memorylog')" class="nav-btn">타임라인</button>
+      <button onclick="showSection('music')" class="nav-btn">오늘의 음악</button>
     </div>
   </div>
 
@@ -372,7 +351,15 @@
         <h2>블로그 글 작성</h2>
         <form id="blogForm">
           <input type="text" id="blogTitle" placeholder="제목" required>
-          <textarea id="blogContent" placeholder="내용" required rows="10"></textarea>
+          <textarea id="blogContent" placeholder="내용" required rows="8"></textarea>
+          
+          <div class="image-upload-area">
+            <input type="file" id="blogImages" multiple accept="image/*" style="display: none;">
+            <p>이미지 추가 (여러 장 가능)</p>
+            <button type="button" onclick="document.getElementById('blogImages').click()">이미지 선택</button>
+            <div id="blogImagePreview" class="image-preview"></div>
+          </div>
+          
           <button type="submit">글 업로드</button>
         </form>
       </div>
@@ -452,6 +439,95 @@
         <div id="memorylogManageList">타임라인을 불러오는 중...</div>
       </div>
     </div>
+
+    <div id="music-section" class="admin-section">
+      <div class="upload-section">
+        <h2>오늘의 음악 설정</h2>
+        <form id="musicForm">
+          <input type="text" id="musicTitle" placeholder="곡 제목" required>
+          <input type="text" id="musicArtist" placeholder="아티스트" required>
+          <input type="url" id="musicUrl" placeholder="YouTube/Spotify 링크" class="music-url-input" required>
+          <textarea id="musicDescription" placeholder="이 음악에 대한 설명이나 느낌" rows="3"></textarea>
+          <button type="submit">오늘의 음악 설정</button>
+        </form>
+        <div id="musicPreview" class="music-preview" style="display: none;">
+          <h3>미리보기</h3>
+          <div id="musicPreviewContent"></div>
+        </div>
+      </div>
+      <div class="manage-section">
+        <h2>현재 오늘의 음악</h2>
+        <div id="currentMusic">현재 설정된 음악을 불러오는 중...</div>
+        <h3>음악 히스토리</h3>
+        <div id="musicHistory">음악 히스토리를 불러오는 중...</div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    document.getElementById('blogImages').addEventListener('change', function(e) {
+      const files = Array.from(e.target.files);
+      const preview = document.getElementById('blogImagePreview');
+      preview.innerHTML = '';
+      
+      files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const div = document.createElement('div');
+          div.className = 'preview-item';
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="preview">
+            <button type="button" class="remove-image" onclick="removeImage(${index})">×</button>
+          `;
+          preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    window.removeImage = function(index) {
+      const input = document.getElementById('blogImages');
+      const dt = new DataTransfer();
+      const files = Array.from(input.files);
+      
+      files.forEach((file, i) => {
+        if (i !== index) dt.items.add(file);
+      });
+      
+      input.files = dt.files;
+      
+      const event = new Event('change');
+      input.dispatchEvent(event);
+    };
+
+    document.getElementById('musicUrl').addEventListener('input', function(e) {
+      const url = e.target.value;
+      const preview = document.getElementById('musicPreview');
+      const content = document.getElementById('musicPreviewContent');
+      
+      if (url && (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('spotify.com'))) {
+        preview.style.display = 'block';
+        
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          const videoId = extractYoutubeId(url);
+          if (videoId) {
+            content.innerHTML = `
+              <iframe width="300" height="169" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+            `;
+          }
+        } else if (url.includes('spotify.com')) {
+          content.innerHTML = `<p>🎵 Spotify 링크가 감지되었습니다.</p>`;
+        }
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+
+    function extractYoutubeId(url) {
+      const reg = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|embed)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/;
+      const match = url.match(reg);
+      return match ? match[1] : '';
+    }
+  </script>
 </body>
 </html>
